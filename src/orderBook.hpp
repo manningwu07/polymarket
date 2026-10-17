@@ -1,3 +1,5 @@
+#pragma once
+
 #include <bits/stdc++.h>
 #include <unordered_set>
 #include "order.hpp"
@@ -19,9 +21,13 @@ class OrderBook {
         Sequence next_sequence_ = 0;
         unordered_set<OrderId> canceled;
         // Buy
-        OrderHeap<Order> order_queue_buy;
+        OrderHeap<BidCompare> order_heap_buy;
         // Sell
-        OrderHeap<Order> order_queue_sell;
+        OrderHeap<AskCompare> order_heap_sell;
 
+        // Logic Helpers
+        template<typename Compare>
+        void submit_market_helper(OrderId id, OrderHeap<Compare> heap, Quantity quantity);
+        
         void update();
 };

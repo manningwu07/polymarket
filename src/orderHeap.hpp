@@ -1,3 +1,5 @@
+#pragma once
+
 #include <bits/stdc++.h>
 #include "order.hpp"
 
@@ -28,16 +30,19 @@ class OrderHeap {
     public:
         Order top(); // returns top
         void pop(); // deletes root
-        void insert(Order order); // insert
+        void push(Order order); // insert
         int find(OrderId id); // returns index of id
+        size_t size(); // size of heap
         
     private:
         vector<Order> heap_;
         unordered_map<OrderId, size_t> positions_;
-        Compare comp_;
+        Compare higher_priority_;
 
         void sift_up(size_t i);
         void sift_down(size_t i);
         void swap_nodes(size_t a, size_t b);
         
 };
+
+#include "orderHeap.tpp"

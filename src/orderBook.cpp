@@ -10,7 +10,7 @@ using namespace std;
  * First checks if anything changed
  * Then executes a simulation tick
  */
-void update() {
+void OrderBook::update() {
     /*
      * 
      * while both sides nonempty
@@ -43,12 +43,26 @@ void OrderBook::submit_limit(OrderId id, Side side,
 
     // O(log n)
     if (side == Side::Buy) {
-        order_queue_buy.push(order);
-    } else if (side == Side::Sell) {
-        order_queue_sell.push(order);
+        order_heap_buy.push(order);
+    } else {
+        order_heap_sell.push(order);
     }
 
     update();
+}
+
+template<typename Compare>
+void OrderBook::submit_market_helper(OrderId id, OrderHeap<Compare> heap, Quantity quantity) {
+    while(heap.size() > 0) {
+        Order order = heap.top();
+        if (order.quantity > quantity) {
+            modify(order.id, order.price, order.quantity - quantity);
+            break;
+        } else {
+            quantity -= order.quantity;
+            heap.pop();
+        }
+    }
 }
 
 /*
@@ -57,7 +71,15 @@ void OrderBook::submit_limit(OrderId id, Side side,
  */
 void OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
     // Get price -> match, then update?
-    // Or we can j directly modify the sell top?
+    // Or we can j directly modify the opposite side top?
+    // Or j use match
+
+    if(side == Side::Buy) {
+        submit_market_helper(id, order_heap_sell, quantity);
+    } else {
+        submit_market_helper(id, order_heap_buy, quantity);
+    }
+
     update();
 }
 
@@ -65,15 +87,21 @@ void OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
  * 
  */
 bool OrderBook::cancel(OrderId id){
+    if (order_heap_buy.find(id) == -1 && 
+        order_heap_sell.find(id) == -1) return false;
     canceled.insert(id);
     update();
+
+    return true;
 }
 
 /*
- * 
+ * Modifies order
  */
 bool OrderBook::modify(OrderId, Price newPrice, Quantity newQuantity){
-    // Locate it in priority queue
+    // Locate it in priority queue, then update quantities + sequence
     
     update();
+
+    return true;
 }
