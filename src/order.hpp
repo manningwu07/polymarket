@@ -15,12 +15,12 @@ enum Side: uint8_t {
     Sell
 };
 
-struct Order{
+struct Order {
     OrderId id;
     Side side;
     Price price; // divide by 100 to get actual price
     Quantity quantity;
 
     Sequence sequence;
-    chrono::system_clock created_at;
+    // chrono::system_clock created_at; (not optimal but would add in future)
 };
