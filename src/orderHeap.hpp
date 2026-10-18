@@ -28,6 +28,15 @@ struct AskCompare {
 template<typename Compare>
 class OrderHeap {
     public:
+        const Order& operator[](size_t i) const {
+            return heap_[i];
+        }
+        
+        void update_quantity(size_t i, Quantity quantity) {
+            heap_[i].quantity = quantity;
+        }
+        void update(size_t i, const Order& newOrder);
+        
         Order top(); // returns top
         void pop(); // deletes root
         void push(Order order); // insert

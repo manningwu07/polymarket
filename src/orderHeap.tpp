@@ -1,4 +1,15 @@
 template<typename Compare>
+void OrderHeap<Compare>::update(size_t i, const Order& newOrder) {
+    heap_[i] = newOrder;
+
+    if (i > 0 && higher_priority_(heap_[i], heap_[(i - 1) / 2])) {
+        sift_up(i);
+    } else {
+        sift_down(i);
+    }
+}
+
+template<typename Compare>
 size_t OrderHeap<Compare>::size(){
     return heap_.size();
 }
