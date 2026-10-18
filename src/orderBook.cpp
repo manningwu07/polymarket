@@ -1,7 +1,9 @@
+#include <__format/range_default_formatter.h>
 #include <algorithm>
 #include <csetjmp>
 #include <cstddef>
 #include <optional>
+#include <stdexcept>
 #include "orderBook.hpp"
 #include "order.hpp"
 #include "orderHeap.hpp"
@@ -13,29 +15,84 @@ using namespace std;
  * First checks if anything changed
  * Then executes a simulation tick
  */
-void OrderBook::update() {
-    while(order_heap_buy.size() != 0 && order_heap_sell.size() != 0){
-        Order best_bid = order_heap_buy[0];
-        Order best_ask = order_heap_sell[0];
 
-        if (best_bid.price < best_ask.price) break;
+Execution OrderBook::update(Order incoming) {
+    Execution ex{
+        .order = incoming,
+        .fills = {}
+    };
 
-        if(best_bid.quantity > best_ask.quantity) {
-            order_heap_buy.update_quantity(0, best_bid.quantity - best_ask.quantity);
-            order_heap_sell.pop();
-        } else if(best_bid.quantity < best_ask.quantity) {
-            order_heap_sell.update_quantity(0, best_ask.quantity - best_bid.quantity);
-            order_heap_buy.pop();
-        } else { // equal, pop both
-            order_heap_buy.pop();
-            order_heap_sell.pop();
+    // Match incoming against the opposite heap
+    auto match = [&](auto& heap) {
+        while (incoming.quantity > 0 && heap.size() > 0) {
+            Order maker = heap[0];
+
+            // Check whether prices cross (market orders always cross)
+            if (incoming.ordertype == OrderType::limit) {
+                if (incoming.side == Side::buy &&
+                    *incoming.price < *maker.price) {
+                    break;
+                }
+
+                if (incoming.side == Side::sell &&
+                    *incoming.price > *maker.price) {
+                    break;
+                }
+            }
+
+            // Execute trade
+            Quantity traded = std::min(
+                incoming.quantity,
+                maker.quantity
+            );
+
+            // Record this trade
+            ex.fills.push_back(Fill{
+                maker.id,
+                incoming.id,
+                *maker.price,
+                traded
+            });
+
+            // Reduce incoming quantity
+            incoming.quantity -= traded;
+
+            // Update the resting maker
+            if (traded == maker.quantity) {
+                heap.pop();
+            } else {
+                heap.update_quantity(
+                    0, maker.quantity - traded
+                );
+            }
+        }
+    };
+
+    // Choose the opposite heap
+    if (incoming.side == Side::buy) {
+        match(order_heap_sell);
+    } else {
+        match(order_heap_buy);
+    }
+
+    // Rest unmatched LIMIT quantity
+    if (incoming.ordertype == OrderType::limit &&
+        incoming.quantity > 0) {
+
+        if (incoming.side == Side::buy) {
+            order_heap_buy.push(incoming);
+        } else {
+            order_heap_sell.push(incoming);
         }
     }
-    
-    return;
+
+    // Return residual order and all fills
+    ex.order = incoming;
+    return ex;
 }
 
-optional<pair<Side, int>> OrderBook::findId(OrderId id) {
+
+optional<pair<Side, size_t>> OrderBook::findId(OrderId id) {
     int buy_i = order_heap_buy.find(id);
     if (buy_i != -1)
         return pair{Side::buy, buy_i};
@@ -50,17 +107,18 @@ optional<pair<Side, int>> OrderBook::findId(OrderId id) {
 /*
  * Create a Buy/sell at this quantity, but only at this price or better.
  */
-void OrderBook::submit_limit(OrderId id, Side side, 
+Execution OrderBook::submit_limit(OrderId id, Side side, 
     Price price, Quantity quantity) {
     Order order = {
         .id=id,
         .side=side,
         .price=price,
         .quantity=quantity,
-
+        .ordertype=limit,
         .sequence=next_sequence_++,
     };
 
+    logged_ids.insert(id);
     // O(log n)
     if (side == Side::buy) {
         order_heap_buy.push(order);
@@ -68,51 +126,60 @@ void OrderBook::submit_limit(OrderId id, Side side,
         order_heap_sell.push(order);
     }
 
-    update();
-}
-
-template<typename Compare>
-void OrderBook::submit_market_helper(OrderId id, OrderHeap<Compare>& heap, Quantity quantity) {
-    while(heap.size() > 0 && quantity > 0) {
-        Quantity heap_quant = heap[0].quantity;
-        if (heap_quant > quantity) {
-            heap.update_quantity(0, heap_quant - quantity);
-            break;
-        } else {
-            quantity -= heap_quant;
-            heap.pop();
-        }
-    }
+    return update(order);
 }
 
 /*
  * Create a Buy/Sell at this quantity
  * right now at whatever prices are available
  */
-void OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
+Execution OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
+    auto submit_helper = [&](auto& heap){
+        while(heap.size() > 0 && quantity > 0) {
+            Quantity heap_quant = heap[0].quantity;
+            if (heap_quant > quantity) {
+                heap.update_quantity(0, heap_quant - quantity);
+                break;
+            } else {
+                quantity -= heap_quant;
+                heap.pop();
+            }
+        }
+    };
+    
     if(side == Side::buy) {
-        submit_market_helper(id, order_heap_sell, quantity);
+        submit_helper(order_heap_sell);
     } else {
-        submit_market_helper(id, order_heap_buy, quantity);
+        submit_helper(order_heap_buy);
     }
 
-    update();
+    return update({
+        .id = id,
+        .side = side,
+        .quantity = quantity,
+        .ordertype = market,
+
+        .sequence = next_sequence_++, 
+    });
 }
 
 /*
  * 
  */
-bool OrderBook::cancel(OrderId id) {
+Order OrderBook::cancel(OrderId id) {
     auto location = findId(id);
-    if (!location) return false;
+    if (!location) throw out_of_range("Order ID not found");
 
+    Order order;
     if (location->first == Side::buy) {
+        order = order_heap_buy.get(location->second);
         order_heap_buy.erase(location->second);
     } else {
+        order = order_heap_sell.get(location->second);
         order_heap_sell.erase(location->second);
     }
 
-    return true;
+    return order;
 }
 
 /*

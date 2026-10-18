@@ -39,6 +39,7 @@ public:
   }
 
   void erase(size_t i);
+  Order get(size_t i);
 
   // Heap APIs
   Order top();            // returns top

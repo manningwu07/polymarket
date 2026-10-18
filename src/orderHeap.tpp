@@ -1,24 +1,4 @@
 template<typename Compare>
-void OrderHeap<Compare>::erase(size_t i) {
-    if (i >= heap_.size())
-        throw std::out_of_range("Invalid heap index");
-
-    size_t last = heap_.size() - 1;
-
-    swap_nodes(i, last);
-    positions_.erase(heap_[last].id);
-    heap_.pop_back();
-
-    if (i >= heap_.size()) return;
-
-    if (i > 0 && higher_priority_(heap_[i], heap_[(i - 1) / 2])) {
-        sift_up(i);
-    } else {
-        sift_down(i);
-    }
-}
-
-template<typename Compare>
 void OrderHeap<Compare>::update(size_t i, const Order& newOrder) {
     heap_[i] = newOrder;
 
@@ -61,6 +41,33 @@ int OrderHeap<Compare>::find(OrderId id){
     return -1;
 } // returns index of id in O(1) or -1
 
+template<typename Compare>
+Order OrderHeap<Compare>::get(size_t i){
+    if(i > heap_.size()) throw out_of_range("Invalid heap index");
+    return heap_[i];
+} // returns order at index i
+
+template<typename Compare>
+void OrderHeap<Compare>::erase(size_t i) {
+    if (i >= heap_.size())
+        throw out_of_range("Invalid heap index");
+
+    size_t last = heap_.size() - 1;
+
+    swap_nodes(i, last);
+    positions_.erase(heap_[last].id);
+    heap_.pop_back();
+
+    if (i >= heap_.size()) return;
+
+    if (i > 0 && higher_priority_(heap_[i], heap_[(i - 1) / 2])) {
+        sift_up(i);
+    } else {
+        sift_down(i);
+    }
+} // erases at id
+
+// Private functions
 template<typename Compare>
 void OrderHeap<Compare>::sift_up(size_t i){
     if (i == 0) return;
