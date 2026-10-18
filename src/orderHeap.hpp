@@ -36,7 +36,9 @@ class OrderHeap {
             heap_[i].quantity = quantity;
         }
         void update(size_t i, const Order& newOrder);
+
         
+        void erase(size_t i);
         Order top(); // returns top
         void pop(); // deletes root
         void push(Order order); // insert

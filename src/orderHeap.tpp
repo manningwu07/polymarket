@@ -1,4 +1,24 @@
 template<typename Compare>
+void OrderHeap<Compare>::erase(size_t i) {
+    if (i >= heap_.size())
+        throw std::out_of_range("Invalid heap index");
+
+    size_t last = heap_.size() - 1;
+
+    swap_nodes(i, last);
+    positions_.erase(heap_[last].id);
+    heap_.pop_back();
+
+    if (i >= heap_.size()) return;
+
+    if (i > 0 && higher_priority_(heap_[i], heap_[(i - 1) / 2])) {
+        sift_up(i);
+    } else {
+        sift_down(i);
+    }
+}
+
+template<typename Compare>
 void OrderHeap<Compare>::update(size_t i, const Order& newOrder) {
     heap_[i] = newOrder;
 
@@ -21,12 +41,7 @@ Order OrderHeap<Compare>::top(){
 
 template<typename Compare>
 void OrderHeap<Compare>::pop() {
-    size_t last = heap_.size() - 1;
-    swap_nodes(0, last);
-    positions_.erase(heap_[last].id);
-    heap_.pop_back();
-    
-    if(heap_.size() > 0) sift_down(0); // sift down root
+    erase(0);
 }; // deletes the top
 
 template<typename Compare>
@@ -66,11 +81,11 @@ void OrderHeap<Compare>::sift_down(size_t i) {
     if (l >= n) return; // No children
 
     if(r >= n){ // One child
-        if(higher_priority_(heap_[i], heap_[l])) swap_nodes(i, l);
+        if(higher_priority_(heap_[l], heap_[i])) swap_nodes(i, l);
     } else { // 2 children
         size_t swap_child_index = higher_priority_(heap_[l], heap_[r]) ? r : l;
         
-        if (higher_priority_(heap_[i], heap_[swap_child_index])) {
+        if (higher_priority_(heap_[swap_child_index], heap_[i])) {
             swap_nodes(i, swap_child_index);
             sift_down(swap_child_index);
         }

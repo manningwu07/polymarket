@@ -18,7 +18,7 @@ class OrderBook {
 
         bool modify(OrderId, Price newPrice, Quantity newQuantity);
     private:
-        Sequence next_sequence_ = 0;
+        Sequence next_sequence_ = 1;
         unordered_set<OrderId> canceled;
         // Buy
         OrderHeap<BidCompare> order_heap_buy;
@@ -28,8 +28,6 @@ class OrderBook {
         // Logic Helpers
         template<typename Compare>
         void submit_market_helper(OrderId id, OrderHeap<Compare>& heap, Quantity quantity);
-        template<typename Compare>
-        void modify_helper(OrderHeap<Compare> heap, int index, OrderId id, Price newPrice, Quantity newQuantity);
         
         optional<pair<Side, int>> findId(OrderId id);
         void update();

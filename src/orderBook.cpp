@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #include <csetjmp>
+#include <cstddef>
 #include <optional>
-#include <unordered_set>
 #include "orderBook.hpp"
 #include "order.hpp"
 #include "orderHeap.hpp"
@@ -14,7 +14,7 @@ using namespace std;
  * Then executes a simulation tick
  */
 void OrderBook::update() {
-    while(order_heap_buy.size() != 0 || order_heap_sell.size() != 0){
+    while(order_heap_buy.size() != 0 && order_heap_sell.size() != 0){
         Order best_bid = order_heap_buy[0];
         Order best_ask = order_heap_sell[0];
 
@@ -73,7 +73,7 @@ void OrderBook::submit_limit(OrderId id, Side side,
 
 template<typename Compare>
 void OrderBook::submit_market_helper(OrderId id, OrderHeap<Compare>& heap, Quantity quantity) {
-    while(heap.size() > 0) {
+    while(heap.size() > 0 && quantity > 0) {
         Quantity heap_quant = heap[0].quantity;
         if (heap_quant > quantity) {
             heap.update_quantity(0, heap_quant - quantity);
@@ -90,10 +90,6 @@ void OrderBook::submit_market_helper(OrderId id, OrderHeap<Compare>& heap, Quant
  * right now at whatever prices are available
  */
 void OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
-    // Get price -> match, then update?
-    // Or we can j directly modify the opposite side top?
-    // Or j use match
-
     if(side == Side::Buy) {
         submit_market_helper(id, order_heap_sell, quantity);
     } else {
@@ -106,27 +102,17 @@ void OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
 /*
  * 
  */
-bool OrderBook::cancel(OrderId id){
-    if (!findId(id)) return false;
-    canceled.insert(id);
-    update();
+bool OrderBook::cancel(OrderId id) {
+    auto location = findId(id);
+    if (!location) return false;
+
+    if (location->first == Side::Buy) {
+        order_heap_buy.erase(location->second);
+    } else {
+        order_heap_sell.erase(location->second);
+    }
 
     return true;
-}
-
-template<typename Compare>
-void OrderBook::modify_helper(OrderHeap<Compare> heap, int i, OrderId id, Price newPrice, Quantity newQuantity){
-    Order order = heap[i];
-    bool reSequence = newPrice > order.price || newQuantity > order.quantity;
-
-    Order newOrder = {
-        .id = id,
-        .price = newPrice,
-        .quantity = newQuantity,
-        .sequence = reSequence ? next_sequence_++ : order.sequence
-    };
-
-    heap.update(i, newOrder);
 }
 
 /*
@@ -137,10 +123,18 @@ bool OrderBook::modify(OrderId id, Price newPrice, Quantity newQuantity){
     auto side = findId(id);
     if(!side) return false;
 
+    Order newOrder = {
+        .id = id,
+        .side = side->first,
+        .price = newPrice,
+        .quantity = newQuantity,
+        .sequence = next_sequence_++
+    };
+
     if (side->first == Side::Buy){
-        modify_helper(order_heap_buy, side->second, id, newPrice, newQuantity);
+        order_heap_buy.update(side->second, newOrder);
     } else {
-        modify_helper(order_heap_sell, side->second, id, newPrice, newQuantity);
+        order_heap_sell.update(side->second, newOrder);
     }
     
     update();
