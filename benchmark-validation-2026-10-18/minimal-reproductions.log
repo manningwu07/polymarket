@@ -1,0 +1,9 @@
+public_market_priority side=buy expected_cancel_2=false actual=false expected_cancel_3=true actual=true
+public_market_priority side=sell expected_cancel_2=false actual=false expected_cancel_3=true actual=true
+heap_pop expected_top=101 actual=101 parent=101 left=103 right=102
+heap_index_after_pop=true
+market_consumes_sequence expected=3 actual=2
+duplicate_id rejected=false actual_heap_size=2 index_size=1
+retired_id rejected=false
+zero_quantity rejected=false
+failing_cases=4

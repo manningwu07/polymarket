@@ -1,0 +1,78 @@
+test_module_cli_rejects_non_positive_counts (test_benchmark.CliTests.test_module_cli_rejects_non_positive_counts) ... ok
+test_module_cli_reports_configuration_and_methodology (test_benchmark.CliTests.test_module_cli_reports_configuration_and_methodology) ... ok
+test_nearest_rank_rejects_empty_values_and_bad_percentiles (test_benchmark.PercentileTests.test_nearest_rank_rejects_empty_values_and_bad_percentiles) ... ok
+test_nearest_rank_uses_ceiling_rank (test_benchmark.PercentileTests.test_nearest_rank_uses_ceiling_rank) ... ok
+test_replay_rejects_unknown_action (test_benchmark.PercentileTests.test_replay_rejects_unknown_action) ... ok
+test_bootstrap_populates_both_sides_with_fifo_depth (test_benchmark.WorkloadTests.test_bootstrap_populates_both_sides_with_fifo_depth) ... ok
+test_cancellation_heavy_cancels_old_and_recent_live_orders (test_benchmark.WorkloadTests.test_cancellation_heavy_cancels_old_and_recent_live_orders) ... ok
+test_every_scenario_replays_without_invalid_lifecycle_operations (test_benchmark.WorkloadTests.test_every_scenario_replays_without_invalid_lifecycle_operations) ... ok
+test_generation_is_seeded_and_exact_length (test_benchmark.WorkloadTests.test_generation_is_seeded_and_exact_length) ... ok
+test_generation_rejects_non_positive_operation_count (test_benchmark.WorkloadTests.test_generation_rejects_non_positive_operation_count) ... ok
+test_heavy_matching_fills_both_taker_sides_and_multiple_levels (test_benchmark.WorkloadTests.test_heavy_matching_fills_both_taker_sides_and_multiple_levels) ... ok
+test_mixed_includes_both_sides_modifications_cancels_and_fills (test_benchmark.WorkloadTests.test_mixed_includes_both_sides_modifications_cancels_and_fills) ... ok
+test_mostly_resting_does_not_cross (test_benchmark.WorkloadTests.test_mostly_resting_does_not_cross) ... ok
+test_smaller_workload_is_prefix_of_larger_workload (test_benchmark.WorkloadTests.test_smaller_workload_is_prefix_of_larger_workload) ... ok
+test_cancel_head_middle_and_tail_within_one_price_level (test_engine.EngineTest.test_cancel_head_middle_and_tail_within_one_price_level) ... ok
+test_cancel_returns_remaining_order_and_id_stays_retired (test_engine.EngineTest.test_cancel_returns_remaining_order_and_id_stays_retired) ... ok
+test_crossing_limit_uses_maker_price_and_preserves_fill_order (test_engine.EngineTest.test_crossing_limit_uses_maker_price_and_preserves_fill_order) ... ok
+test_deterministic_random_trace_matches_reference_model (test_engine.EngineTest.test_deterministic_random_trace_matches_reference_model) ... ok
+test_duplicate_rejection_is_atomic (test_engine.EngineTest.test_duplicate_rejection_is_atomic) ... ok
+test_fully_filled_ids_are_retired_and_missing_changes_raise (test_engine.EngineTest.test_fully_filled_ids_are_retired_and_missing_changes_raise) ... ok
+test_invalid_cancel_modify_and_snapshot_inputs_are_atomic (test_engine.EngineTest.test_invalid_cancel_modify_and_snapshot_inputs_are_atomic) ... ok
+test_invalid_submit_inputs_are_atomic_and_do_not_consume_sequence (test_engine.EngineTest.test_invalid_submit_inputs_are_atomic_and_do_not_consume_sequence) ... ok
+test_limit_matching_stops_before_ineligible_next_price_both_sides (test_engine.EngineTest.test_limit_matching_stops_before_ineligible_next_price_both_sides) ... ok
+test_limit_orders_rest_in_best_price_fifo_order (test_engine.EngineTest.test_limit_orders_rest_in_best_price_fifo_order) ... ok
+test_market_order_discards_unfilled_remainder_and_retires_id (test_engine.EngineTest.test_market_order_discards_unfilled_remainder_and_retires_id) ... ok
+test_market_orders_on_empty_book_for_both_sides_do_not_rest (test_engine.EngineTest.test_market_orders_on_empty_book_for_both_sides_do_not_rest) ... ok
+test_modify_after_partial_fill_replaces_remaining_and_loses_priority (test_engine.EngineTest.test_modify_after_partial_fill_replaces_remaining_and_loses_priority) ... ok
+test_modify_replaces_quantity_and_always_loses_priority (test_engine.EngineTest.test_modify_replaces_quantity_and_always_loses_priority) ... ok
+test_modify_reprices_and_matches_as_taker (test_engine.EngineTest.test_modify_reprices_and_matches_as_taker) ... ok
+test_non_crossing_limit_rests_and_partial_taker_remainder_rests (test_engine.EngineTest.test_non_crossing_limit_rests_and_partial_taker_remainder_rests) ... ok
+test_partially_filled_head_keeps_fifo_priority_on_both_sides (test_engine.EngineTest.test_partially_filled_head_keeps_fifo_priority_on_both_sides) ... ok
+test_previous_snapshots_and_execution_results_remain_unchanged (test_engine.EngineTest.test_previous_snapshots_and_execution_results_remain_unchanged) ... ok
+test_price_level_can_be_removed_then_recreated (test_engine.EngineTest.test_price_level_can_be_removed_then_recreated) ... ok
+test_public_value_types (test_engine.EngineTest.test_public_value_types) ... ok
+test_sell_taker_walks_highest_bids_at_maker_prices (test_engine.EngineTest.test_sell_taker_walks_highest_bids_at_maker_prices) ... ok
+test_generated_cli_reports_canonical_hash_and_workload_state (test_portable_benchmark.PortableBenchmarkCliTests.test_generated_cli_reports_canonical_hash_and_workload_state) ... ok
+test_results_path_requires_a_precomputed_trace (test_portable_benchmark.PortableBenchmarkCliTests.test_results_path_requires_a_precomputed_trace) ... ok
+test_size_and_operations_are_mutually_exclusive (test_portable_benchmark.PortableBenchmarkCliTests.test_size_and_operations_are_mutually_exclusive) ... ok
+test_trace_cli_rejects_missing_and_malformed_trace_files (test_portable_benchmark.PortableBenchmarkCliTests.test_trace_cli_rejects_missing_and_malformed_trace_files) ... ok
+test_trace_cli_writes_language_neutral_result_json (test_portable_benchmark.PortableBenchmarkCliTests.test_trace_cli_writes_language_neutral_result_json) ... ok
+test_audit_and_run_trace_reject_invalid_order_lifecycle (test_portable_benchmark.PortableBenchmarkTests.test_audit_and_run_trace_reject_invalid_order_lifecycle) ... ok
+test_audit_has_exact_fill_order_partial_count_and_final_state (test_portable_benchmark.PortableBenchmarkTests.test_audit_has_exact_fill_order_partial_count_and_final_state) ... ok
+test_audit_replay_and_run_trace_return_the_same_deterministic_result (test_portable_benchmark.PortableBenchmarkTests.test_audit_replay_and_run_trace_return_the_same_deterministic_result) ... ok
+test_missing_operation_classes_have_none_latency (test_portable_benchmark.PortableBenchmarkTests.test_missing_operation_classes_have_none_latency) ... ok
+test_replay_groups_latency_by_public_operation_name (test_portable_benchmark.PortableBenchmarkTests.test_replay_groups_latency_by_public_operation_name) ... ok
+test_run_trace_keeps_trace_metadata_and_scalar_statistics (test_portable_benchmark.PortableBenchmarkTests.test_run_trace_keeps_trace_metadata_and_scalar_statistics) ... ok
+test_run_trace_rejects_empty_operations_and_bad_repetitions (test_portable_benchmark.PortableBenchmarkTests.test_run_trace_rejects_empty_operations_and_bad_repetitions) ... ok
+test_corpus_covers_all_workloads_at_small_size (test_trace_corpus.TraceCorpusTests.test_corpus_covers_all_workloads_at_small_size) ... ok
+test_shipped_traces_regenerate_exactly_and_match_expected_results (test_trace_corpus.TraceCorpusTests.test_shipped_traces_regenerate_exactly_and_match_expected_results) ... ok
+test_cli_accepts_numeric_sizes_and_rejects_mutually_exclusive_flags (test_trace_sizes.TraceSizeTests.test_cli_accepts_numeric_sizes_and_rejects_mutually_exclusive_flags) ... usage: python3 -m unittest [-h] [--output-dir OUTPUT_DIR]
+                           [--sizes SIZE [SIZE ...] | --operations N]
+                           [--workload {mostly-resting,heavy-matching,cancellation-heavy,modification-heavy,mixed}]
+                           [--seed SEED]
+python3 -m unittest: error: argument --operations: not allowed with argument --sizes
+ok
+test_cli_generates_one_selected_workload_at_custom_count (test_trace_sizes.TraceSizeTests.test_cli_generates_one_selected_workload_at_custom_count) ... ok
+test_resolver_rejects_invalid_and_conflicting_counts (test_trace_sizes.TraceSizeTests.test_resolver_rejects_invalid_and_conflicting_counts) ... ok
+test_size_presets_and_default_resolve_to_expected_counts (test_trace_sizes.TraceSizeTests.test_size_presets_and_default_resolve_to_expected_counts) ... ok
+test_trace_hash_matches_written_canonical_bytes (test_trace_sizes.TraceSizeTests.test_trace_hash_matches_written_canonical_bytes) ... ok
+test_modification_heavy_shape_and_selected_prefixes_replay (test_traces.ModificationWorkloadTests.test_modification_heavy_shape_and_selected_prefixes_replay) ... ok
+test_generator_cli_writes_all_workloads_and_sizes_deterministically (test_traces.TraceTests.test_generator_cli_writes_all_workloads_and_sizes_deterministically) ... ok
+test_non_bmp_unicode_round_trips_as_scalar_values (test_traces.TraceTests.test_non_bmp_unicode_round_trips_as_scalar_values) ... ok
+test_parse_trace_uses_supplied_bytes (test_traces.TraceTests.test_parse_trace_uses_supplied_bytes) ... ok
+test_reader_rejects_bad_wire_data (test_traces.TraceTests.test_reader_rejects_bad_wire_data) ... ok
+test_reader_rejects_unsafe_and_non_positive_numbers (test_traces.TraceTests.test_reader_rejects_unsafe_and_non_positive_numbers) ... ok
+test_round_trip_all_operation_kinds (test_traces.TraceTests.test_round_trip_all_operation_kinds) ... ok
+test_unpaired_surrogates_are_rejected_by_reader_and_writer (test_traces.TraceTests.test_unpaired_surrogates_are_rejected_by_reader_and_writer) ... ok
+test_writer_is_byte_deterministic_and_compact (test_traces.TraceTests.test_writer_is_byte_deterministic_and_compact) ... ok
+test_rejects_invalid_operation_counts (test_workload_state.DefaultRepetitionTests.test_rejects_invalid_operation_counts) ... ok
+test_thresholds (test_workload_state.DefaultRepetitionTests.test_thresholds) ... ok
+test_seeded_workload_matches_independent_snapshot_observation (test_workload_state.WorkloadStateTests.test_seeded_workload_matches_independent_snapshot_observation) ... ok
+test_state_tracks_levels_cancels_reprices_crosses_and_market_discard (test_workload_state.WorkloadStateTests.test_state_tracks_levels_cancels_reprices_crosses_and_market_discard) ... ok
+test_workloads_keep_populated_books_and_target_aged_live_orders (test_workload_state.WorkloadStateTests.test_workloads_keep_populated_books_and_target_aged_live_orders) ... ok
+
+----------------------------------------------------------------------
+Ran 68 tests in 3.049s
+
+OK

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bits/stdc++.h>
 #include <unordered_set>
 #include "order.hpp"
 #include "orderHeap.hpp"
@@ -9,14 +8,17 @@ using namespace std;
 
 class OrderBook {
     public:
-        void submit_limit(OrderId id, Side side, 
+        Execution submit_limit(OrderId id, Side side, 
             Price price, Quantity quantity);
 
-        void submit_market(OrderId id, Side side, Quantity quantity);
+        Execution submit_market(OrderId id, Side side, Quantity quantity);
 
-        bool cancel(OrderId id);
+        Order cancel(OrderId id);
 
-        bool modify(OrderId, Price newPrice, Quantity newQuantity);
+        Execution modify(OrderId, Price newPrice, Quantity newQuantity);
+
+        vector<Order> snapshot(Side side);
+        
     private:
         Sequence next_sequence_ = 1;
         unordered_set<OrderId> canceled;

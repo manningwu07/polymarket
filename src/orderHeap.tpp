@@ -83,7 +83,7 @@ void OrderHeap<Compare>::sift_down(size_t i) {
     if(r >= n){ // One child
         if(higher_priority_(heap_[l], heap_[i])) swap_nodes(i, l);
     } else { // 2 children
-        size_t swap_child_index = higher_priority_(heap_[l], heap_[r]) ? r : l;
+        size_t swap_child_index = higher_priority_(heap_[l], heap_[r]) ? l : r;
         
         if (higher_priority_(heap_[swap_child_index], heap_[i])) {
             swap_nodes(i, swap_child_index);

@@ -1,0 +1,2 @@
+trace=/Users/manningwu/Desktop/personal-projects/polymarket-base/large-traces/mixed-100000-seed42.jsonl events=100000 sha256=1e7091d299467fb24b67a866619bcd8ab166b165e1fbcd19aa8e32eeb7159188
+FAIL event_index=1040 op=submit-limit id=order-1036 sequence differs for order-1036: expected=1039 actual=1037

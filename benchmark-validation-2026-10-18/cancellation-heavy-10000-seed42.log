@@ -1,0 +1,2 @@
+trace=/Users/manningwu/Desktop/personal-projects/polymarket-base/traces/cancellation-heavy-10000-seed42.jsonl events=10000 sha256=1bac5285ee938bf1927922ee0b8d0dcc271a42ca3eb74cca59e5979d394ba2b7
+FAIL event_index=1046 op=submit-limit id=order-1036 sequence differs for order-1036: expected=1038 actual=1037

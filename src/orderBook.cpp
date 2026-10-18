@@ -1,4 +1,4 @@
-#include <bits/stdc++.h>
+#include <algorithm>
 #include <csetjmp>
 #include <cstddef>
 #include <optional>
@@ -38,11 +38,11 @@ void OrderBook::update() {
 optional<pair<Side, int>> OrderBook::findId(OrderId id) {
     int buy_i = order_heap_buy.find(id);
     if (buy_i != -1)
-        return pair{Side::Buy, buy_i};
+        return pair{Side::buy, buy_i};
 
     int sell_i = order_heap_sell.find(id);
     if (sell_i != -1)
-        return pair{Side::Sell, sell_i};
+        return pair{Side::sell, sell_i};
 
     return std::nullopt;
 }
@@ -62,7 +62,7 @@ void OrderBook::submit_limit(OrderId id, Side side,
     };
 
     // O(log n)
-    if (side == Side::Buy) {
+    if (side == Side::buy) {
         order_heap_buy.push(order);
     } else {
         order_heap_sell.push(order);
@@ -90,7 +90,7 @@ void OrderBook::submit_market_helper(OrderId id, OrderHeap<Compare>& heap, Quant
  * right now at whatever prices are available
  */
 void OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
-    if(side == Side::Buy) {
+    if(side == Side::buy) {
         submit_market_helper(id, order_heap_sell, quantity);
     } else {
         submit_market_helper(id, order_heap_buy, quantity);
@@ -106,7 +106,7 @@ bool OrderBook::cancel(OrderId id) {
     auto location = findId(id);
     if (!location) return false;
 
-    if (location->first == Side::Buy) {
+    if (location->first == Side::buy) {
         order_heap_buy.erase(location->second);
     } else {
         order_heap_sell.erase(location->second);
@@ -131,7 +131,7 @@ bool OrderBook::modify(OrderId id, Price newPrice, Quantity newQuantity){
         .sequence = next_sequence_++
     };
 
-    if (side->first == Side::Buy){
+    if (side->first == Side::buy){
         order_heap_buy.update(side->second, newOrder);
     } else {
         order_heap_sell.update(side->second, newOrder);
@@ -142,3 +142,14 @@ bool OrderBook::modify(OrderId id, Price newPrice, Quantity newQuantity){
     return true;
 }
 
+vector<Order> OrderBook::snapshot(Side side){
+    if(side == buy) {
+        vector<Order> heap = order_heap_buy.get_heap();
+        sort(heap.begin(), heap.end(), BidCompare{});
+        return heap;
+    }
+    // else
+    vector<Order> heap = order_heap_sell.get_heap();
+    sort(heap.begin(), heap.end(), AskCompare{});
+    return heap;
+}
