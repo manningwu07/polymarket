@@ -1,2 +1,0 @@
-trace=/Users/manningwu/Desktop/personal-projects/polymarket-base/traces/modification-heavy-10000-seed42.jsonl events=10000 sha256=f3eb47cfaddced1dc9c26f36b367ce5192e5d3a24a9b8d46fd491c31e395611a
-FAIL event_index=1026 op=modify id=order-108 sequence differs for order-108: expected=1027 actual=1026

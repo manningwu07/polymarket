@@ -48,8 +48,8 @@ Execution OrderBook::update(Order incoming) {
 
             // Record this trade
             ex.fills.push_back(Fill{
-                maker.id,
-                incoming.id,
+                incoming.side == Side::buy ? incoming.id : maker.id,
+                incoming.side == Side::sell ? incoming.id : maker.id,
                 *maker.price,
                 traded
             });
@@ -109,6 +109,14 @@ optional<pair<Side, size_t>> OrderBook::findId(OrderId id) {
  */
 Execution OrderBook::submit_limit(OrderId id, Side side, 
     Price price, Quantity quantity) {
+    if (side != Side::buy && side != Side::sell) {
+        throw std::invalid_argument("Invalid side");
+    }
+    
+    if (id.empty() || price <= 0 || quantity <= 0 || logged_ids.contains(id)) {
+        throw std::invalid_argument("Invalid limit order");
+    }
+    
     Order order = {
         .id=id,
         .side=side,
@@ -119,13 +127,6 @@ Execution OrderBook::submit_limit(OrderId id, Side side,
     };
 
     logged_ids.insert(id);
-    // O(log n)
-    if (side == Side::buy) {
-        order_heap_buy.push(order);
-    } else {
-        order_heap_sell.push(order);
-    }
-
     return update(order);
 }
 
@@ -134,33 +135,25 @@ Execution OrderBook::submit_limit(OrderId id, Side side,
  * right now at whatever prices are available
  */
 Execution OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
-    auto submit_helper = [&](auto& heap){
-        while(heap.size() > 0 && quantity > 0) {
-            Quantity heap_quant = heap[0].quantity;
-            if (heap_quant > quantity) {
-                heap.update_quantity(0, heap_quant - quantity);
-                break;
-            } else {
-                quantity -= heap_quant;
-                heap.pop();
-            }
-        }
-    };
+    // Validation
+    if (side != Side::buy && side != Side::sell) {
+        throw std::invalid_argument("Invalid side");
+    }
     
-    if(side == Side::buy) {
-        submit_helper(order_heap_sell);
-    } else {
-        submit_helper(order_heap_buy);
+    if (id.empty() || quantity <= 0 ||logged_ids.contains(id)) {
+        throw std::invalid_argument("Invalid market order");
     }
 
-    return update({
+    Order order = {
         .id = id,
         .side = side,
         .quantity = quantity,
         .ordertype = market,
 
         .sequence = next_sequence_++, 
-    });
+    };
+    logged_ids.insert(id);
+    return update(order);
 }
 
 /*
@@ -185,31 +178,45 @@ Order OrderBook::cancel(OrderId id) {
 /*
  * Modifies order
  */
-bool OrderBook::modify(OrderId id, Price newPrice, Quantity newQuantity){
-    // Locate it in priority queue, then update quantities + sequence
-    auto side = findId(id);
-    if(!side) return false;
 
-    Order newOrder = {
-        .id = id,
-        .side = side->first,
-        .price = newPrice,
-        .quantity = newQuantity,
-        .sequence = next_sequence_++
-    };
-
-    if (side->first == Side::buy){
-        order_heap_buy.update(side->second, newOrder);
-    } else {
-        order_heap_sell.update(side->second, newOrder);
+Execution OrderBook::modify(OrderId id, Price newPrice, Quantity newQuantity) {
+    // Validation
+    if (newPrice <= 0 || newQuantity <= 0) {
+        throw std::invalid_argument("Invalid price or quantity");
     }
-    
-    update();
 
-    return true;
+    auto location = findId(id);
+
+    if (!location) {
+        throw std::out_of_range("Order ID not found");
+    }
+
+    // Copy the existing order, then remove it
+    Order order;
+
+    if (location->first == Side::buy) {
+        order = order_heap_buy.get(location->second);
+        order_heap_buy.erase(location->second);
+    } else {
+        order = order_heap_sell.get(location->second);
+        order_heap_sell.erase(location->second);
+    }
+
+    // Replace remaining quantity, price, and time priority, and re-insert
+    order.price = newPrice;
+    order.quantity = newQuantity;
+    order.sequence = next_sequence_++;
+
+    return update(order);
 }
 
+
 vector<Order> OrderBook::snapshot(Side side){
+    // Validation
+    if (side != Side::buy && side != Side::sell) {
+        throw std::invalid_argument("Invalid side");
+    }
+    
     if(side == buy) {
         vector<Order> heap = order_heap_buy.get_heap();
         sort(heap.begin(), heap.end(), BidCompare{});

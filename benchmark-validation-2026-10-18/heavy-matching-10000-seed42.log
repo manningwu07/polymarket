@@ -1,2 +1,0 @@
-trace=/Users/manningwu/Desktop/personal-projects/polymarket-base/traces/heavy-matching-10000-seed42.jsonl events=10000 sha256=6c7996d1ed76bfb04ccba2a5ce45810464f282772364458ee8bd71a7162aafc4
-FAIL event_index=1029 op=submit-limit id=order-1029 sequence differs for order-1029: expected=1030 actual=1029

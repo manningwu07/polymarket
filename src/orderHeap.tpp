@@ -43,7 +43,7 @@ int OrderHeap<Compare>::find(OrderId id){
 
 template<typename Compare>
 Order OrderHeap<Compare>::get(size_t i){
-    if(i > heap_.size()) throw out_of_range("Invalid heap index");
+    if(i >= heap_.size()) throw out_of_range("Invalid heap index");
     return heap_[i];
 } // returns order at index i
 

@@ -1,2 +1,0 @@
-trace=/Users/manningwu/Desktop/personal-projects/polymarket-base/traces/mostly-resting-10000-seed42.jsonl events=10000 sha256=c1c693f03f70c3e59c9798b0d03cb9abaa32481ca116825d7ba3ad116b9fe551
-FAIL event_index=1029 op=submit-limit id=order-1029 sequence differs for order-1029: expected=1030 actual=1029
