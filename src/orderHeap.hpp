@@ -45,7 +45,7 @@ public:
   Order top();            // returns top
   void pop();             // deletes root
   void push(Order order); // insert
-  int find(OrderId id);   // returns index of id
+  int find(const OrderId& id);   // returns index of id
   size_t size();          // size of heap
 
 private:

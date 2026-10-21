@@ -92,7 +92,7 @@ Execution OrderBook::update(Order incoming) {
 }
 
 
-optional<pair<Side, size_t>> OrderBook::findId(OrderId id) {
+optional<pair<Side, size_t>> OrderBook::findId(const OrderId& id) {
     int buy_i = order_heap_buy.find(id);
     if (buy_i != -1)
         return pair{Side::buy, buy_i};
@@ -107,7 +107,7 @@ optional<pair<Side, size_t>> OrderBook::findId(OrderId id) {
 /*
  * Create a Buy/sell at this quantity, but only at this price or better.
  */
-Execution OrderBook::submit_limit(OrderId id, Side side, 
+Execution OrderBook::submit_limit(const OrderId& id, Side side, 
     Price price, Quantity quantity) {
     if (side != Side::buy && side != Side::sell) {
         throw std::invalid_argument("Invalid side");
@@ -134,7 +134,7 @@ Execution OrderBook::submit_limit(OrderId id, Side side,
  * Create a Buy/Sell at this quantity
  * right now at whatever prices are available
  */
-Execution OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
+Execution OrderBook::submit_market(const OrderId& id, Side side, Quantity quantity){
     // Validation
     if (side != Side::buy && side != Side::sell) {
         throw std::invalid_argument("Invalid side");
@@ -159,7 +159,7 @@ Execution OrderBook::submit_market(OrderId id, Side side, Quantity quantity){
 /*
  * 
  */
-Order OrderBook::cancel(OrderId id) {
+Order OrderBook::cancel(const OrderId& id) {
     auto location = findId(id);
     if (!location) throw out_of_range("Order ID not found");
 
@@ -179,7 +179,7 @@ Order OrderBook::cancel(OrderId id) {
  * Modifies order
  */
 
-Execution OrderBook::modify(OrderId id, Price newPrice, Quantity newQuantity) {
+Execution OrderBook::modify(const OrderId& id, Price newPrice, Quantity newQuantity) {
     // Validation
     if (newPrice <= 0 || newQuantity <= 0) {
         throw std::invalid_argument("Invalid price or quantity");

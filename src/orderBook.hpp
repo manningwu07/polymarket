@@ -8,11 +8,10 @@ using namespace std;
 
 class OrderBook {
     public:
-        Execution submit_limit(OrderId id, Side side, 
-            Price price, Quantity quantity);
-        Execution submit_market(OrderId id, Side side, Quantity quantity);
-        Order cancel(OrderId id);
-        Execution modify(OrderId, Price newPrice, Quantity newQuantity);
+        Execution submit_limit(const OrderId&, Side, Price, Quantity);
+        Execution submit_market(const OrderId&, Side, Quantity);
+        Order cancel(const OrderId&);
+        Execution modify(const OrderId&, Price, Quantity);
 
         vector<Order> snapshot(Side side);
         
@@ -24,6 +23,6 @@ class OrderBook {
         // Sell
         OrderHeap<AskCompare> order_heap_sell;
         
-        optional<pair<Side, size_t>> findId(OrderId id);
+        optional<pair<Side, size_t>> findId(const OrderId& id);
         Execution update(Order incoming);
 };

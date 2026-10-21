@@ -33,7 +33,7 @@ void OrderHeap<Compare>::push(Order order){
 } // push element
 
 template<typename Compare>
-int OrderHeap<Compare>::find(OrderId id){
+int OrderHeap<Compare>::find(const OrderId& id){
     if (positions_.contains(id)){
         return positions_[id];
     }
@@ -55,9 +55,10 @@ void OrderHeap<Compare>::erase(size_t i) {
     size_t last = heap_.size() - 1;
 
     // Swap nodes
-    std::swap(heap_[i], heap_[last]);
-    positions_[heap_[i].id] = i;
-    // Dont need to swap positions of last cuz getting popped anyway
+    if (i != last){
+        std::swap(heap_[i], heap_[last]);
+        positions_[heap_[i].id] = i;
+    } // Dont need to swap positions of last cuz getting popped anyway
 
     // Erase nodes
     positions_.erase(heap_[last].id);
