@@ -55,7 +55,6 @@ private:
 
   void sift_up(size_t i);
   void sift_down(size_t i);
-  void swap_nodes(size_t a, size_t b);
 };
 
 #include "orderHeap.tpp"

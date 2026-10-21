@@ -54,7 +54,12 @@ void OrderHeap<Compare>::erase(size_t i) {
 
     size_t last = heap_.size() - 1;
 
-    swap_nodes(i, last);
+    // Swap nodes
+    std::swap(heap_[i], heap_[last]);
+    positions_[heap_[i].id] = i;
+    // Dont need to swap positions of last cuz getting popped anyway
+
+    // Erase nodes
     positions_.erase(heap_[last].id);
     heap_.pop_back();
 
@@ -70,39 +75,50 @@ void OrderHeap<Compare>::erase(size_t i) {
 // Private functions
 template<typename Compare>
 void OrderHeap<Compare>::sift_up(size_t i){
-    if (i == 0) return;
-
-    size_t parent = (i - 1) / 2;
-    if(higher_priority_(heap_[i], heap_[parent])) {
-        swap_nodes(i, parent);
-        sift_up(parent);
+    bool changed = false;
+    while(true){
+        if (i == 0) break;
+        
+        size_t parent = (i - 1) / 2;
+        if(!higher_priority_(heap_[i], heap_[parent])) break;
+        
+        std::swap(heap_[i], heap_[parent]);
+        positions_[heap_[i].id] = i;
+        i = parent;
+        changed = true;
     }
+
+    if(changed) positions_[heap_[i].id] = i;
 }
 
 template<typename Compare>
 void OrderHeap<Compare>::sift_down(size_t i) {
-    size_t l = i * 2 + 1;
-    size_t r = i * 2 + 2;
     size_t n = heap_.size();
 
-    if (l >= n) return; // No children
-
-    if(r >= n){ // One child
-        if(higher_priority_(heap_[l], heap_[i])) swap_nodes(i, l);
-    } else { // 2 children
-        size_t swap_child_index = higher_priority_(heap_[l], heap_[r]) ? l : r;
-        
-        if (higher_priority_(heap_[swap_child_index], heap_[i])) {
-            swap_nodes(i, swap_child_index);
-            sift_down(swap_child_index);
-        }
-    }
-};
-
-template<typename Compare>
-void OrderHeap<Compare>::swap_nodes(size_t a, size_t b) {
-    std::swap(heap_[a], heap_[b]);
+    bool changed = false;
+    while(true) {
+        size_t l = i * 2 + 1;
+        size_t r = i * 2 + 2;
     
-    positions_[heap_[a].id] = a;
-    positions_[heap_[b].id] = b;
-}
+        if (l >= n) break; // No children
+    
+        if(r >= n){ // One child
+            if(!higher_priority_(heap_[l], heap_[i])) break;
+            
+            std::swap(heap_[i], heap_[l]);
+            positions_[heap_[i].id] = i;
+            i = l;
+        } else { // 2 children
+            size_t child_idx = higher_priority_(heap_[l], heap_[r]) ? l : r;
+            if (!higher_priority_(heap_[child_idx], heap_[i])) break;
+            
+            std::swap(heap_[i], heap_[child_idx]);
+            positions_[heap_[i].id] = i;
+            i = child_idx;
+        }
+
+        changed = true;
+    }
+
+    if(changed) positions_[heap_[i].id] = i;
+};
