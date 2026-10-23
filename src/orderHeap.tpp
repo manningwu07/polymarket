@@ -2,7 +2,7 @@ template<typename Compare>
 void OrderHeap<Compare>::update(size_t i, const Order& newOrder) {
     heap_[i] = newOrder;
 
-    if (i > 0 && higher_priority_(heap_[i], heap_[(i - 1) / 2])) {
+    if (i > 0 && higher_priority_(newOrder, heap_[(i - 1) / 2])) {
         sift_up(i);
     } else {
         sift_down(i);
@@ -19,13 +19,27 @@ Order OrderHeap<Compare>::top(){
     return heap_[0];
 } // returns top
 
+// Hotpathing pop because its called everytime update is
 template<typename Compare>
 void OrderHeap<Compare>::pop() {
-    erase(0);
+    if(heap_.size() == 0) throw out_of_range("heap is empty");
+
+    // Update positions regardless
+    positions_.erase(heap_[0].id);
+    if(heap_.size() == 1) { // If only node, j pop
+        heap_.pop_back();
+    } else { // last replaces root, then sift down
+        heap_[0] = std::move(heap_[heap_.size() - 1]);
+        positions_[heap_[0].id] = 0; // last id goes to 0, therefore update using heap_[0].id
+    
+        // Erase nodes
+        heap_.pop_back();
+        sift_down(0);
+    }
 }; // deletes the top
 
 template<typename Compare>
-void OrderHeap<Compare>::push(Order order){
+void OrderHeap<Compare>::push(const Order& order){
     heap_.push_back(order);
     positions_[order.id] = heap_.size() - 1;
     

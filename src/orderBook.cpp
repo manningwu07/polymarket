@@ -16,7 +16,7 @@ using namespace std;
  * Then executes a simulation tick
  */
 
-Execution OrderBook::update(Order incoming) {
+Execution OrderBook::update(const Order& incoming) {
     Execution ex{
         .order = incoming,
         .fills = {}
@@ -24,38 +24,38 @@ Execution OrderBook::update(Order incoming) {
 
     // Match incoming against the opposite heap
     auto match = [&](auto& heap) {
-        while (incoming.quantity > 0 && heap.size() > 0) {
-            Order maker = heap[0];
+        while (ex.order.quantity > 0 && heap.size() > 0) {
+            const Order& maker = heap[0];
 
             // Check whether prices cross (market orders always cross)
-            if (incoming.ordertype == OrderType::limit) {
-                if (incoming.side == Side::buy &&
-                    *incoming.price < *maker.price) {
+            if (ex.order.ordertype == OrderType::limit) {
+                if (ex.order.side == Side::buy &&
+                    *ex.order.price < *maker.price) {
                     break;
                 }
 
-                if (incoming.side == Side::sell &&
-                    *incoming.price > *maker.price) {
+                if (ex.order.side == Side::sell &&
+                    *ex.order.price > *maker.price) {
                     break;
                 }
             }
 
             // Execute trade
             Quantity traded = std::min(
-                incoming.quantity,
+                ex.order.quantity,
                 maker.quantity
             );
 
             // Record this trade
             ex.fills.push_back(Fill{
-                incoming.side == Side::buy ? incoming.id : maker.id,
-                incoming.side == Side::sell ? incoming.id : maker.id,
+                ex.order.side == Side::buy ? ex.order.id : maker.id,
+                ex.order.side == Side::sell ? ex.order.id : maker.id,
                 *maker.price,
                 traded
             });
 
-            // Reduce incoming quantity
-            incoming.quantity -= traded;
+            // Reduce ex.order quantity
+            ex.order.quantity -= traded;
 
             // Update the resting maker
             if (traded == maker.quantity) {
@@ -69,25 +69,22 @@ Execution OrderBook::update(Order incoming) {
     };
 
     // Choose the opposite heap
-    if (incoming.side == Side::buy) {
+    if (ex.order.side == Side::buy) {
         match(order_heap_sell);
     } else {
         match(order_heap_buy);
     }
 
     // Rest unmatched LIMIT quantity
-    if (incoming.ordertype == OrderType::limit &&
-        incoming.quantity > 0) {
+    if (ex.order.ordertype == OrderType::limit &&
+        ex.order.quantity > 0) {
 
-        if (incoming.side == Side::buy) {
-            order_heap_buy.push(incoming);
+        if (ex.order.side == Side::buy) {
+            order_heap_buy.push(ex.order);
         } else {
-            order_heap_sell.push(incoming);
+            order_heap_sell.push(ex.order);
         }
     }
-
-    // Return residual order and all fills
-    ex.order = incoming;
     return ex;
 }
 
@@ -185,27 +182,50 @@ Execution OrderBook::modify(const OrderId& id, Price newPrice, Quantity newQuant
         throw std::invalid_argument("Invalid price or quantity");
     }
 
-    auto location = findId(id);
+    auto location = findId(id); // Side, index
 
     if (!location) {
         throw std::out_of_range("Order ID not found");
     }
 
-    // Copy the existing order, then remove it
-    Order order;
-
+    // 2 paths, whether modification triggers trade or not
+    bool crosses = false;
+    
     if (location->first == Side::buy) {
-        order = order_heap_buy.get(location->second);
-        order_heap_buy.erase(location->second);
+        if (order_heap_sell.size() > 0) {
+            crosses = newPrice >= *order_heap_sell[0].price;
+        }
     } else {
-        order = order_heap_sell.get(location->second);
-        order_heap_sell.erase(location->second);
+        if (order_heap_buy.size() > 0) {
+            crosses = newPrice <= *order_heap_buy[0].price;
+        }
     }
 
-    // Replace remaining quantity, price, and time priority, and re-insert
-    order.price = newPrice;
-    order.quantity = newQuantity;
-    order.sequence = next_sequence_++;
+    Order order = {
+        .id = id,
+        .side = location->first,
+        .price = newPrice,
+        .quantity = newQuantity,
+        .ordertype = limit,
+        .sequence = next_sequence_++
+    };
+    
+    // If they don't j modify in place and sift accordingly
+    if (!crosses) {
+        if(order.side == Side::buy){
+            order_heap_buy.update(location->second, order);
+        } else {
+            order_heap_sell.update(location->second, order);
+        }
+        return Execution{.order=order, .fills={}};
+    } 
+    
+    // Else, erase and re-insert
+    if (order.side == Side::buy) {
+        order_heap_buy.erase(location->second);
+    } else {
+        order_heap_sell.erase(location->second);
+    }
 
     return update(order);
 }

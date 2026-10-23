@@ -6,3 +6,6 @@ uv run --frozen --no-sync python -B ../polymarket/benchmark-native-2026-10-19/ru
 uv run --frozen --no-sync python -B ../polymarket/benchmark-native-2026-10-19/measure.py
 <!--E2E testing-->
 ./benchmark-native-2026-10-19/benchmark.sh
+
+<!--Bypass caches & refresh successful entries-->
+./benchmark-native-2026-10-19/benchmark.sh --override

@@ -44,7 +44,7 @@ public:
   // Heap APIs
   Order top();            // returns top
   void pop();             // deletes root
-  void push(Order order); // insert
+  void push(const Order& order); // insert
   int find(const OrderId& id);   // returns index of id
   size_t size();          // size of heap
 

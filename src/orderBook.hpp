@@ -24,5 +24,5 @@ class OrderBook {
         OrderHeap<AskCompare> order_heap_sell;
         
         optional<pair<Side, size_t>> findId(const OrderId& id);
-        Execution update(Order incoming);
+        Execution update(const Order& incoming);
 };
