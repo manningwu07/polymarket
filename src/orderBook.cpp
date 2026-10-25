@@ -110,9 +110,12 @@ Execution OrderBook::submit_limit(const OrderId& id, Side side,
         throw std::invalid_argument("Invalid side");
     }
     
-    if (id.empty() || price <= 0 || quantity <= 0 || logged_ids.contains(id)) {
+    if (id.empty() || price <= 0 || quantity <= 0) {
         throw std::invalid_argument("Invalid limit order");
     }
+
+    auto[_, inserted] = logged_ids.insert(id);
+    if(!inserted) throw std::invalid_argument("Invalid limit order");
     
     Order order = {
         .id=id,
@@ -123,7 +126,7 @@ Execution OrderBook::submit_limit(const OrderId& id, Side side,
         .sequence=next_sequence_++,
     };
 
-    logged_ids.insert(id);
+    
     return update(order);
 }
 
@@ -137,9 +140,13 @@ Execution OrderBook::submit_market(const OrderId& id, Side side, Quantity quanti
         throw std::invalid_argument("Invalid side");
     }
     
-    if (id.empty() || quantity <= 0 ||logged_ids.contains(id)) {
+    if (id.empty() || quantity <= 0) {
         throw std::invalid_argument("Invalid market order");
     }
+    
+    auto[_, inserted] = logged_ids.insert(id);
+    if(!inserted) throw std::invalid_argument("Invalid market order");
+
 
     Order order = {
         .id = id,
@@ -149,7 +156,7 @@ Execution OrderBook::submit_market(const OrderId& id, Side side, Quantity quanti
 
         .sequence = next_sequence_++, 
     };
-    logged_ids.insert(id);
+    
     return update(order);
 }
 

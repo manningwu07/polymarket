@@ -41,9 +41,8 @@ void OrderHeap<Compare>::pop() {
 template<typename Compare>
 void OrderHeap<Compare>::push(const Order& order){
     heap_.push_back(order);
-    positions_[order.id] = heap_.size() - 1;
-    
-    sift_up(heap_.size() - 1); // sift up new order
+    // sift_up handles position creation
+    sift_up(heap_.size() - 1, true); 
 } // push element
 
 template<typename Compare>
@@ -89,7 +88,7 @@ void OrderHeap<Compare>::erase(size_t i) {
 
 // Private functions
 template<typename Compare>
-void OrderHeap<Compare>::sift_up(size_t i){
+void OrderHeap<Compare>::sift_up(size_t i, bool is_new){
     bool changed = false;
     while(true){
         if (i == 0) break;
@@ -103,7 +102,7 @@ void OrderHeap<Compare>::sift_up(size_t i){
         changed = true;
     }
 
-    if(changed) positions_[heap_[i].id] = i;
+    if(changed || is_new) positions_[heap_[i].id] = i;
 }
 
 template<typename Compare>
