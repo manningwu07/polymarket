@@ -2,3 +2,4 @@ benchmark*
 profiles*
 build*
 .pytest_cache*
+REPORT.md

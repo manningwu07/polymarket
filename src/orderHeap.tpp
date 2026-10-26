@@ -1,3 +1,13 @@
+// TEMP probe: avg sift_up levels per push
+#include <cstdio>
+inline struct SiftProbe {
+    size_t pushes = 0, levels = 0;
+    ~SiftProbe() {
+        if (pushes) fprintf(stderr, "pushes=%zu levels=%zu avg_d=%.3f\n",
+                            pushes, levels, double(levels) / pushes);
+    }
+} sift_probe;
+
 template<typename Compare>
 void OrderHeap<Compare>::update(size_t i, const Order& newOrder) {
     heap_[i] = newOrder;
@@ -47,8 +57,9 @@ void OrderHeap<Compare>::push(const Order& order){
 
 template<typename Compare>
 int OrderHeap<Compare>::find(const OrderId& id){
-    if (positions_.contains(id)){
-        return positions_[id];
+    auto it = positions_.find(id);
+    if (it != positions_.end()) {
+        return it->second;
     }
 
     return -1;
@@ -90,6 +101,7 @@ void OrderHeap<Compare>::erase(size_t i) {
 template<typename Compare>
 void OrderHeap<Compare>::sift_up(size_t i, bool is_new){
     bool changed = false;
+    if (is_new) ++sift_probe.pushes;
     while(true){
         if (i == 0) break;
         
@@ -97,6 +109,7 @@ void OrderHeap<Compare>::sift_up(size_t i, bool is_new){
         if(!higher_priority_(heap_[i], heap_[parent])) break;
         
         std::swap(heap_[i], heap_[parent]);
+        if (is_new) ++sift_probe.levels;
         positions_[heap_[i].id] = i;
         i = parent;
         changed = true;
