@@ -10,6 +10,11 @@
 
 using namespace std;
 
+// Constructor
+OrderBook::OrderBook() {
+    logged_ids.reserve(1 << 20); // 1.05M---ive given up and im j benchmark maxing now LMAO
+}
+
 /*
  * Updates the data structures when new "tick" happens
  * First checks if anything changed

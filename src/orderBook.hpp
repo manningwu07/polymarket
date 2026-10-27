@@ -13,6 +13,7 @@ struct Entry {
 
 class OrderBook {
     public:
+        OrderBook();
         Execution submit_limit(const OrderId&, Side, Price, Quantity);
         Execution submit_market(const OrderId&, Side, Quantity);
         Order cancel(const OrderId&);
