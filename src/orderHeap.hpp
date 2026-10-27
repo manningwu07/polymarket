@@ -1,8 +1,6 @@
 #pragma once
 
 #include "order.hpp"
-#include <unordered_map>
-
 using namespace std;
 
 struct BidCompare {
@@ -45,19 +43,20 @@ public:
   Order top();            // returns top
   void pop();             // deletes root
   void push(const Order& order); // insert
-  int find(const OrderId& id);   // returns index of id
+  int find(Handle handle);   // returns index of id, pass in hashmap val 
   size_t size();          // size of heap
 
 private:
   vector<Order> heap_;
-  unordered_map<OrderId, size_t> positions_;
+  vector<int> positions_; // id -> heap idx
+  // unordered_map<OrderId, size_t> positions_; 
   Compare higher_priority_;
   
 /*
  *  is_new allows sift_up to forcefully add into positions_ in the end
  *  used for push so it doesnt need to redundently add into positions_
  */
-  void sift_up(size_t i, bool is_new = false); 
+  void sift_up(size_t i); 
   void sift_down(size_t i);
 };
 
