@@ -50,6 +50,7 @@ CXXFLAGS=(
   -I "$JSON_INCLUDE"
   -I "$PROJECT_DIR/src"
   -I "$OPENSSL_PREFIX/include"
+  -I "$(brew --prefix boost)/include"
 )
 
 cd "$BASE_DIR"

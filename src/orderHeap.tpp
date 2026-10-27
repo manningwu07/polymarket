@@ -1,6 +1,12 @@
 #include <stdexcept>
+
 template<typename Compare>
-void OrderHeap<Compare>::update(size_t i, const Order& newOrder) {
+OrderHeap<Compare>::OrderHeap(){
+    positions_.resize(1<<20, -1);
+}
+
+template<typename Compare>
+void OrderHeap<Compare>::update(size_t i, const Order_Internal& newOrder) {
     heap_[i] = newOrder;
 
     if (i > 0 && higher_priority_(newOrder, heap_[(i - 1) / 2])) {
@@ -16,7 +22,7 @@ size_t OrderHeap<Compare>::size(){
 }
 
 template<typename Compare>
-Order OrderHeap<Compare>::top(){
+Order_Internal OrderHeap<Compare>::top(){
     return heap_[0];
 } // returns top
 
@@ -40,7 +46,7 @@ void OrderHeap<Compare>::pop() {
 }; // deletes the top
 
 template<typename Compare>
-void OrderHeap<Compare>::push(const Order& order){
+void OrderHeap<Compare>::push(const Order_Internal& order){
     heap_.push_back(order);
     if (order.handle >= positions_.size()) {
         positions_.resize(order.handle + 1, -1);
@@ -57,7 +63,7 @@ int OrderHeap<Compare>::find(Handle handle){
 } // returns index of id or -1 (handle initalizes to -1)
 
 template<typename Compare>
-Order OrderHeap<Compare>::get(size_t i){
+Order_Internal OrderHeap<Compare>::get(size_t i){
     if(i >= heap_.size()) throw out_of_range("Invalid heap index");
     return heap_[i];
 } // returns order at index i

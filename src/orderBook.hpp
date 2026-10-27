@@ -2,7 +2,7 @@
 
 #include "order.hpp"
 #include "orderHeap.hpp"
-#include <unordered_map>
+#include <boost/unordered/unordered_flat_map.hpp>
 
 using namespace std;
 
@@ -23,15 +23,17 @@ class OrderBook {
         
     private:
         Sequence next_sequence_ = 1;
-        unordered_map<OrderId, Entry> logged_ids; // OrderId -> handle
+        boost::unordered_flat_map<OrderId, Entry> logged_ids; // OrderId -> handle
         
         // Buy
         OrderHeap<BidCompare> order_heap_buy;
         Handle next_buy_handle_ = 1;
+        vector<OrderId> buy_ids; // handle -> id
         // Sell
         OrderHeap<AskCompare> order_heap_sell;
         Handle next_sell_handle_ = 1;
+        vector<OrderId> sell_ids; // handle -> id
         
         optional<pair<Side, int>> findId(const OrderId& id);
-        Execution update(const Order& incoming);
+        Execution update(const OrderId& id, Order_Internal incoming);
 };

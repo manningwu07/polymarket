@@ -19,7 +19,7 @@ enum Side: uint8_t {
     sell
 };
 
-enum OrderType {
+enum OrderType: uint8_t {
     limit,
     market
 };
@@ -32,11 +32,22 @@ struct Order {
     Price price = kNoPrice; // 8
     Quantity quantity; // 8
     Sequence sequence; // 8
-    Handle handle; // 4
     // Enums
     OrderType ordertype; // 1
     Side side; // 1
     // chrono::system_clock created_at; (not optimal but would add in future)
+};
+
+struct Order_Internal {
+    // divide by 100 to get actual price in $
+    // -1 => market price
+    Price price = kNoPrice; // 8
+    Quantity quantity; // 8
+    Sequence sequence; // 8
+    Handle handle; // 4
+    // Enums
+    OrderType ordertype; // 1
+    Side side; // 1
 };
 
 struct Fill {
