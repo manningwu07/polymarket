@@ -11,10 +11,11 @@
 using namespace std;
 
 // Constructor
-OrderBook::OrderBook() {
-    logged_ids.reserve(1 << 20); // 1.05M---ive given up and im j benchmark maxing now LMAO
-    buy_ids.resize(1<<20);
-    sell_ids.resize(1<<20);
+OrderBook::OrderBook() { // ive given up and im j benchmark maxing now LMAO
+    logged_ids.reserve(1 << 17);
+    seen_set.reserve(1<<19);
+    buy_ids.resize(1<<20); 
+    sell_ids.resize(1<<20); 
 }
 
 /*
@@ -69,6 +70,8 @@ Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
 
             // Update the resting maker
             if (traded == maker.quantity) {
+                logged_ids.erase(maker.side == Side::buy ?
+                    buy_ids[maker.handle] : sell_ids[maker.handle]);
                 heap.pop();
             } else {
                 heap.update_quantity(
@@ -94,6 +97,8 @@ Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
         } else {
             order_heap_sell.push(incoming);
         }
+    } else {
+        logged_ids.erase(id);
     }
 
     ex.order = {
@@ -136,8 +141,9 @@ Execution OrderBook::submit_limit(const OrderId& id, Side side,
 
     // Insert logged_ids, update handles
     Handle handle = (side == Side::buy ? next_buy_handle_ : next_sell_handle_);
-    auto[_, inserted] = logged_ids.try_emplace(id, Entry{handle, side});
-    if(!inserted) throw std::invalid_argument("Invalid limit order");
+    auto [_, inserted] = seen_set.emplace(id);
+    if(!inserted) throw std::invalid_argument("Limit id has been reused");
+    logged_ids[id] = Entry{handle, side};
     // inserts handle -> id in proper side and increments respective handle
     side == Side::buy ? buy_ids[next_buy_handle_++] = id : sell_ids[next_sell_handle_++] = id;
     
@@ -171,8 +177,10 @@ Execution OrderBook::submit_market(const OrderId& id, Side side, Quantity quanti
     
     // Insert logged_ids, update handles
     Handle handle = (side == Side::buy ? next_buy_handle_ : next_sell_handle_);
-    auto[_, inserted] = logged_ids.try_emplace(id, Entry{handle, side});
-    if(!inserted) throw std::invalid_argument("Invalid market order");
+    auto [_, inserted] = seen_set.emplace(id);
+    if(!inserted) throw std::invalid_argument("Market id has been reused");
+    logged_ids[id] = Entry{handle, side};
+    // inserts handle -> id in proper side and increments respective handle
     side == Side::buy ? buy_ids[next_buy_handle_++] = id : sell_ids[next_sell_handle_++] = id;
 
     Order_Internal order = {
@@ -203,7 +211,8 @@ Order OrderBook::cancel(const OrderId& id) {
         order = order_heap_sell.get(idx);
         order_heap_sell.erase(idx);
     }
-    
+    logged_ids.erase(id);
+
     Order res = {
         .id = id,
         .price = order.price,

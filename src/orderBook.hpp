@@ -3,6 +3,7 @@
 #include "order.hpp"
 #include "orderHeap.hpp"
 #include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
 
 using namespace std;
 
@@ -24,6 +25,7 @@ class OrderBook {
     private:
         Sequence next_sequence_ = 1;
         boost::unordered_flat_map<OrderId, Entry> logged_ids; // OrderId -> handle
+        boost::unordered_flat_set<OrderId> seen_set;
         
         // Buy
         OrderHeap<BidCompare> order_heap_buy;
