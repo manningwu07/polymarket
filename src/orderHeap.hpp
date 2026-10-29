@@ -23,25 +23,19 @@ struct AskCompare {
 template <typename Compare> class OrderHeap {
 public:
   OrderHeap<Compare>();
-  // Direct heap modifications
+  // Position based modifications
   const vector<Order_Internal> &get_heap() const { return heap_; }
-
-  void update(size_t i, const Order_Internal &newOrder);
-
   const Order_Internal &operator[](size_t i) const { return heap_[i]; }
-
-  void update_quantity(size_t i, Quantity quantity) {
-    heap_[i].quantity = quantity;
-  }
-
-  void erase(size_t i);
-  Order_Internal get(size_t i);
+  
+  void update_top_quantity(Quantity quantity) { heap_[0].quantity = quantity;}
+  void update(Handle h, const Order_Internal &newOrder);
+  void erase(Handle h);
+  Order_Internal get(Handle h);
 
   // Heap APIs
   Order_Internal top();            // returns top
   void pop();             // deletes root
   void push(const Order_Internal& order); // insert
-  int find(Handle handle);   // returns index of id, pass in hashmap val 
   size_t size();          // size of heap
 
 private:
@@ -49,10 +43,6 @@ private:
   vector<int> positions_; // handle -> heap idx
   Compare higher_priority_;
   
-/*
- *  is_new allows sift_up to forcefully add into positions_ in the end
- *  used for push so it doesnt need to redundently add into positions_
- */
   void sift_up(size_t i); 
   void sift_down(size_t i);
 };

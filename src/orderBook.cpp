@@ -14,8 +14,9 @@ using namespace std;
 OrderBook::OrderBook() { // ive given up and im j benchmark maxing now LMAO
     logged_ids.reserve(1 << 17);
     seen_set.reserve(1<<19);
-    buy_ids.resize(1<<20); 
-    sell_ids.resize(1<<20); 
+
+    buy_ids.reserve(1<<19);
+    sell_ids.reserve(1<<19);
 }
 
 /*
@@ -70,13 +71,16 @@ Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
 
             // Update the resting maker
             if (traded == maker.quantity) {
-                logged_ids.erase(maker.side == Side::buy ?
-                    buy_ids[maker.handle] : sell_ids[maker.handle]);
+                if (maker.side == Side::buy) {
+                    logged_ids.erase(buy_ids[maker.handle]);
+                    buy_handle.remove_handle(maker.handle);
+                } else {
+                    logged_ids.erase(sell_ids[maker.handle]);
+                    sell_handle.remove_handle(maker.handle);
+                }
                 heap.pop();
             } else {
-                heap.update_quantity(
-                    0, maker.quantity - traded
-                );
+                heap.update_top_quantity(maker.quantity - traded);
             }
         }
     };
@@ -99,6 +103,11 @@ Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
         }
     } else {
         logged_ids.erase(id);
+        if (incoming.side == Side::buy) {
+            buy_handle.remove_handle(incoming.handle);
+        } else {
+            sell_handle.remove_handle(incoming.handle);
+        }
     }
 
     ex.order = {
@@ -113,17 +122,30 @@ Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
     return ex;
 }
 
-
-optional<pair<Side, int>> OrderBook::findId(const OrderId& id) {
-    // Get the hashmap
+/*
+ * Safely finds and returns entry from logged_id
+ * If fails to find, returns null pointer
+ */
+optional<Entry> OrderBook::getEntry(const OrderId& id) {
     auto it = logged_ids.find(id);
     if(it == logged_ids.end()) return std::nullopt;
-    
-    if (it->second.side == Side::buy){
-        return pair{it->second.side, order_heap_buy.find(it->second.handle)};
-    } else {
-        return pair{it->second.side, order_heap_sell.find(it->second.handle)};
-    }
+    return it->second;
+}
+
+/*
+ * Assigns a handle on the order's side and records id <-> handle
+ * Fresh handles are always ids.size(), so they append; reused ones overwrite
+ */
+Handle OrderBook::register_order(const OrderId& id, Side side) {
+    OrderHandle& pool = side == Side::buy ? buy_handle : sell_handle;
+    vector<OrderId>& ids = side == Side::buy ? buy_ids : sell_ids;
+
+    Handle handle = pool.assign_handle();
+    if (handle == ids.size()) ids.push_back(id);
+    else ids[handle] = id;
+
+    logged_ids[id] = Entry{handle, side};
+    return handle;
 }
 
 /*
@@ -139,14 +161,10 @@ Execution OrderBook::submit_limit(const OrderId& id, Side side,
         throw std::invalid_argument("Invalid limit order");
     }
 
-    // Insert logged_ids, update handles
-    Handle handle = (side == Side::buy ? next_buy_handle_ : next_sell_handle_);
     auto [_, inserted] = seen_set.emplace(id);
     if(!inserted) throw std::invalid_argument("Limit id has been reused");
-    logged_ids[id] = Entry{handle, side};
-    // inserts handle -> id in proper side and increments respective handle
-    side == Side::buy ? buy_ids[next_buy_handle_++] = id : sell_ids[next_sell_handle_++] = id;
-    
+
+    Handle handle = register_order(id, side);
     
     Order_Internal order = {
         .price=price,
@@ -175,13 +193,10 @@ Execution OrderBook::submit_market(const OrderId& id, Side side, Quantity quanti
         throw std::invalid_argument("Invalid market order");
     }
     
-    // Insert logged_ids, update handles
-    Handle handle = (side == Side::buy ? next_buy_handle_ : next_sell_handle_);
     auto [_, inserted] = seen_set.emplace(id);
     if(!inserted) throw std::invalid_argument("Market id has been reused");
-    logged_ids[id] = Entry{handle, side};
-    // inserts handle -> id in proper side and increments respective handle
-    side == Side::buy ? buy_ids[next_buy_handle_++] = id : sell_ids[next_sell_handle_++] = id;
+    
+    Handle handle = register_order(id, side);
 
     Order_Internal order = {
         .price = kNoPrice,
@@ -199,17 +214,19 @@ Execution OrderBook::submit_market(const OrderId& id, Side side, Quantity quanti
  * 
  */
 Order OrderBook::cancel(const OrderId& id) {
-    auto location = findId(id);
-    if (!location || location->second == -1) throw out_of_range("Order ID not found");
-    auto [side, idx] = *location;
+    auto entry = getEntry(id);
+    if (!entry) throw out_of_range("Order ID not found");
+    auto [handle, side] = *entry;
     
     Order_Internal order;
     if (side == Side::buy) {
-        order = order_heap_buy.get(idx);
-        order_heap_buy.erase(idx);
+        order = order_heap_buy.get(handle);
+        order_heap_buy.erase(handle);
+        buy_handle.remove_handle(handle);
     } else {
-        order = order_heap_sell.get(idx);
-        order_heap_sell.erase(idx);
+        order = order_heap_sell.get(handle);
+        order_heap_sell.erase(handle);
+        sell_handle.remove_handle(handle);
     }
     logged_ids.erase(id);
 
@@ -235,26 +252,19 @@ Execution OrderBook::modify(const OrderId& id, Price newPrice, Quantity newQuant
     if (newPrice <= 0 || newQuantity <= 0)
         throw std::invalid_argument("Invalid price or quantity");
 
-    auto location = findId(id); // Side, index
+    auto entry = getEntry(id);
+    if (!entry) throw std::out_of_range("Order ID not found");
 
-    if (!location || location->second == -1)
-        throw std::out_of_range("Order ID not found");
-
-    auto [side, idx] = *location;
+    auto [handle, side] = *entry;
     // 2 paths, whether modification triggers trade or not
     bool crosses = false;
 
-    Handle handle;
     if (side == Side::buy) {
-        if (order_heap_sell.size() > 0) {
+        if (order_heap_sell.size() > 0)
             crosses = order_heap_sell[0].price != -1 && newPrice >= order_heap_sell[0].price;
-        }
-        handle = order_heap_buy[idx].handle;
     } else {
-        if (order_heap_buy.size() > 0) {
+        if (order_heap_buy.size() > 0)
             crosses = order_heap_buy[0].price != -1 && newPrice <= order_heap_buy[0].price;
-        }
-        handle = order_heap_sell[idx].handle;
     }
 
     Order_Internal order = {
@@ -269,9 +279,9 @@ Execution OrderBook::modify(const OrderId& id, Price newPrice, Quantity newQuant
     // If they don't j modify in place and sift accordingly
     if (!crosses) {
         if(order.side == Side::buy){
-            order_heap_buy.update(idx, order);
+            order_heap_buy.update(handle, order);
         } else {
-            order_heap_sell.update(idx, order);
+            order_heap_sell.update(handle, order);
         }
         return Execution{.order={
             .id = id,
@@ -285,9 +295,9 @@ Execution OrderBook::modify(const OrderId& id, Price newPrice, Quantity newQuant
     
     // Else, erase and re-insert
     if (order.side == Side::buy) {
-        order_heap_buy.erase(idx);
+        order_heap_buy.erase(handle);
     } else {
-        order_heap_sell.erase(idx);
+        order_heap_sell.erase(handle);
     }
 
     return update(id, order);

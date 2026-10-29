@@ -27,6 +27,7 @@ for src in \
   "$NATIVE_DIR/benchmark.cpp" \
   "$NATIVE_DIR/trace.cpp" \
   "$PROJECT_DIR/src/orderBook.cpp" \
+  "$PROJECT_DIR/src/orderHandle.cpp" \
   "$JSON_INCLUDE/nlohmann/json.hpp" \
   "$OPENSSL_PREFIX/include/openssl/evp.h"; do
   if [[ ! -f "$src" ]]; then
@@ -61,10 +62,11 @@ done
 
 echo "Compiling orderBook.cpp (including orderHeap.tpp)..."
 xcrun clang++ "${CXXFLAGS[@]}" -c "$PROJECT_DIR/src/orderBook.cpp" -o "$OBJ_DIR/orderBook.o"
+xcrun clang++ "${CXXFLAGS[@]}" -c "$PROJECT_DIR/src/orderHandle.cpp" -o "$OBJ_DIR/orderHandle.o"
 
 echo "Linking..."
 xcrun clang++ \
-  "$OBJ_DIR/benchmark.o" "$OBJ_DIR/trace.o" "$OBJ_DIR/orderBook.o" \
+  "$OBJ_DIR/benchmark.o" "$OBJ_DIR/trace.o" "$OBJ_DIR/orderBook.o" "$OBJ_DIR/orderHandle.o" \
   -L "$OPENSSL_PREFIX/lib" -lcrypto -o "$BUILD_EXE"
 
 echo "Generating debug symbols..."

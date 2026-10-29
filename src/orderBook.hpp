@@ -2,6 +2,7 @@
 
 #include "order.hpp"
 #include "orderHeap.hpp"
+#include "orderHandle.hpp"
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/unordered_flat_set.hpp>
 
@@ -29,13 +30,16 @@ class OrderBook {
         
         // Buy
         OrderHeap<BidCompare> order_heap_buy;
-        Handle next_buy_handle_ = 1;
+        OrderHandle buy_handle;
         vector<OrderId> buy_ids; // handle -> id
+        
         // Sell
         OrderHeap<AskCompare> order_heap_sell;
-        Handle next_sell_handle_ = 1;
+        OrderHandle sell_handle;
         vector<OrderId> sell_ids; // handle -> id
         
-        optional<pair<Side, int>> findId(const OrderId& id);
+        
+        optional<Entry> getEntry(const OrderId& id);
+        Handle register_order(const OrderId& id, Side side);
         Execution update(const OrderId& id, Order_Internal incoming);
 };
