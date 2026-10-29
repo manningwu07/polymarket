@@ -12,11 +12,13 @@ using namespace std;
 
 // Constructor
 OrderBook::OrderBook() { // ive given up and im j benchmark maxing now LMAO
-    logged_ids.reserve(1 << 17);
-    seen_set.reserve(1<<19);
+    // Sizes = measured peaks on mixed-1M: 156,984 live ids, 601,785 submits,
+    // 79,042 buy / 77,943 sell handles. All containers still grow past these.
+    logged_ids.reserve(157'000);
+    seen_set.reserve(602'000);
 
-    buy_ids.reserve(1<<19);
-    sell_ids.reserve(1<<19);
+    buy_ids.reserve(80'000);
+    sell_ids.reserve(80'000);
 }
 
 /*

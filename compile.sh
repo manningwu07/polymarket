@@ -21,7 +21,6 @@ for file in \
   "$NATIVE_DIR/benchmark.cpp" \
   "$NATIVE_DIR/trace.cpp" \
   "$PROJECT_DIR/src/orderBook.cpp" \
-  "$PROJECT_DIR/src/orderHandle.cpp" \
   "$JSON_INCLUDE/nlohmann/json.hpp" \
   "$OPENSSL_PREFIX/include/openssl/evp.h"; do
   if [[ ! -f "$file" ]]; then
@@ -50,11 +49,10 @@ done
 
 printf 'Compiling matching engine (including orderHeap.tpp)...\n'
 xcrun clang++ "${CXXFLAGS[@]}" -c "$PROJECT_DIR/src/orderBook.cpp" -o "$TMP_DIR/orderBook.o"
-xcrun clang++ "${CXXFLAGS[@]}" -c "$PROJECT_DIR/src/orderHandle.cpp" -o "$TMP_DIR/orderHandle.o"
 
 printf 'Linking...\n'
 xcrun clang++ \
-  "$TMP_DIR/benchmark.o" "$TMP_DIR/trace.o" "$TMP_DIR/orderBook.o" "$TMP_DIR/orderHandle.o" \
+  "$TMP_DIR/benchmark.o" "$TMP_DIR/trace.o" "$TMP_DIR/orderBook.o" \
   -L "$OPENSSL_PREFIX/lib" -lcrypto \
   -o "$TMP_DIR/custom-benchmark"
 

@@ -2,7 +2,7 @@
 
 template<typename Compare>
 OrderHeap<Compare>::OrderHeap(){
-    positions_.resize(1<<16, -1);
+    positions_.resize(80'000, -1); // measured peak handle per side, mixed-1M
 }
 
 template<typename Compare>
