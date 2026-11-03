@@ -47,12 +47,17 @@ for name in benchmark trace; do
   xcrun clang++ "${CXXFLAGS[@]}" -c "$NATIVE_DIR/$name.cpp" -o "$TMP_DIR/$name.o"
 done
 
-printf 'Compiling matching engine (including orderHeap.tpp)...\n'
-xcrun clang++ "${CXXFLAGS[@]}" -c "$PROJECT_DIR/src/orderBook.cpp" -o "$TMP_DIR/orderBook.o"
+printf 'Compiling matching engine...\n'
+ENGINE_OBJS=()
+for src in orderBook hotpath/bookside hotpath/orderPool; do
+  obj="$TMP_DIR/$(basename "$src").o"
+  xcrun clang++ "${CXXFLAGS[@]}" -c "$PROJECT_DIR/src/$src.cpp" -o "$obj"
+  ENGINE_OBJS+=("$obj")
+done
 
 printf 'Linking...\n'
 xcrun clang++ \
-  "$TMP_DIR/benchmark.o" "$TMP_DIR/trace.o" "$TMP_DIR/orderBook.o" \
+  "$TMP_DIR/benchmark.o" "$TMP_DIR/trace.o" "${ENGINE_OBJS[@]}" \
   -L "$OPENSSL_PREFIX/lib" -lcrypto \
   -o "$TMP_DIR/custom-benchmark"
 

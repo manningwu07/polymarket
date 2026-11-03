@@ -1,0 +1,45 @@
+#pragma once
+
+#include "order.hpp"
+#include "fallback/orderHeap.hpp"
+#include "hotpath/orderHandle.hpp"
+#include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
+
+using namespace std;
+
+struct Entry {
+  Handle handle;
+  Side side;
+};
+
+class OrderBook {
+    public:
+        OrderBook();
+        Execution submit_limit(const OrderId&, Side, Price, Quantity);
+        Execution submit_market(const OrderId&, Side, Quantity);
+        Order cancel(const OrderId&);
+        Execution modify(const OrderId&, Price, Quantity);
+
+        vector<Order> snapshot(Side side);
+        
+    private:
+        Sequence next_sequence_ = 1;
+        boost::unordered_flat_map<OrderId, Entry> logged_ids; // OrderId -> handle
+        boost::unordered_flat_set<OrderId> seen_set;
+        
+        // Buy
+        OrderHeap<BidCompare> order_heap_buy;
+        OrderHandle buy_handle;
+        vector<OrderId> buy_ids; // handle -> id
+        
+        // Sell
+        OrderHeap<AskCompare> order_heap_sell;
+        OrderHandle sell_handle;
+        vector<OrderId> sell_ids; // handle -> id
+        
+        
+        optional<Entry> getEntry(const OrderId& id);
+        Handle register_order(const OrderId& id, Side side);
+        Execution update(const OrderId& id, Order_Internal incoming);
+};

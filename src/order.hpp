@@ -38,6 +38,7 @@ struct Order {
     // chrono::system_clock created_at; (not optimal but would add in future)
 };
 
+// Heap
 struct Order_Internal {
     // divide by 100 to get actual price in $
     // -1 => market price

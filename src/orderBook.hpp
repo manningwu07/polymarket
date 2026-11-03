@@ -1,8 +1,9 @@
 #pragma once
 
 #include "order.hpp"
-#include "orderHeap.hpp"
-#include "orderHandle.hpp"
+#include "fallback/orderHeap.hpp"
+#include "hotpath/bookside.hpp"
+#include "hotpath/orderHandle.hpp"
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/unordered_flat_set.hpp>
 
@@ -11,6 +12,20 @@ using namespace std;
 struct Entry {
   Handle handle;
   Side side;
+  bool in_heap; // price outside BookSide's window; handle belongs to the heap
+};
+
+// One side of the book: prices BookSide covers rest in levels, the rest in the heap.
+template <class Compare>
+struct HalfBook {
+    explicit HalfBook(Side side) : levels(side) {}
+
+    BookSide levels;
+    vector<OrderId> level_ids; // BookSide handle -> id
+
+    OrderHeap<Compare> heap;
+    OrderHandle heap_handles;
+    vector<OrderId> heap_ids; // heap handle -> id
 };
 
 class OrderBook {
@@ -22,24 +37,19 @@ class OrderBook {
         Execution modify(const OrderId&, Price, Quantity);
 
         vector<Order> snapshot(Side side);
-        
+
     private:
         Sequence next_sequence_ = 1;
         boost::unordered_flat_map<OrderId, Entry> logged_ids; // OrderId -> handle
         boost::unordered_flat_set<OrderId> seen_set;
-        
-        // Buy
-        OrderHeap<BidCompare> order_heap_buy;
-        OrderHandle buy_handle;
-        vector<OrderId> buy_ids; // handle -> id
-        
-        // Sell
-        OrderHeap<AskCompare> order_heap_sell;
-        OrderHandle sell_handle;
-        vector<OrderId> sell_ids; // handle -> id
-        
-        
+
+        HalfBook<BidCompare> bids{Side::buy};
+        HalfBook<AskCompare> asks{Side::sell};
+
         optional<Entry> getEntry(const OrderId& id);
-        Handle register_order(const OrderId& id, Side side);
+        // Unlinks a resting order from its side and returns it
+        BookSideOrder remove(const Entry& entry);
+        template <class Compare>
+        void rest(HalfBook<Compare>& half, const OrderId& id, const Order_Internal& order);
         Execution update(const OrderId& id, Order_Internal incoming);
 };
