@@ -27,6 +27,8 @@ for src in \
   "$NATIVE_DIR/benchmark.cpp" \
   "$NATIVE_DIR/trace.cpp" \
   "$PROJECT_DIR/src/orderBook.cpp" \
+  "$PROJECT_DIR/src/hotpath/bookside.cpp" \
+  "$PROJECT_DIR/src/hotpath/orderPool.cpp" \
   "$JSON_INCLUDE/nlohmann/json.hpp" \
   "$OPENSSL_PREFIX/include/openssl/evp.h"; do
   if [[ ! -f "$src" ]]; then
@@ -59,12 +61,17 @@ for name in benchmark trace; do
   xcrun clang++ "${CXXFLAGS[@]}" -c "$NATIVE_DIR/$name.cpp" -o "$OBJ_DIR/$name.o"
 done
 
-echo "Compiling orderBook.cpp (including orderHeap.tpp)..."
-xcrun clang++ "${CXXFLAGS[@]}" -c "$PROJECT_DIR/src/orderBook.cpp" -o "$OBJ_DIR/orderBook.o"
+ENGINE_OBJS=()
+for src in orderBook hotpath/bookside hotpath/orderPool; do
+  echo "Compiling $src.cpp..."
+  obj="$OBJ_DIR/$(basename "$src").o"
+  xcrun clang++ "${CXXFLAGS[@]}" -c "$PROJECT_DIR/src/$src.cpp" -o "$obj"
+  ENGINE_OBJS+=("$obj")
+done
 
 echo "Linking..."
 xcrun clang++ \
-  "$OBJ_DIR/benchmark.o" "$OBJ_DIR/trace.o" "$OBJ_DIR/orderBook.o" \
+  "$OBJ_DIR/benchmark.o" "$OBJ_DIR/trace.o" "${ENGINE_OBJS[@]}" \
   -L "$OPENSSL_PREFIX/lib" -lcrypto -o "$BUILD_EXE"
 
 echo "Generating debug symbols..."

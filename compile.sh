@@ -21,6 +21,8 @@ for file in \
   "$NATIVE_DIR/benchmark.cpp" \
   "$NATIVE_DIR/trace.cpp" \
   "$PROJECT_DIR/src/orderBook.cpp" \
+  "$PROJECT_DIR/src/hotpath/bookside.cpp" \
+  "$PROJECT_DIR/src/hotpath/orderPool.cpp" \
   "$JSON_INCLUDE/nlohmann/json.hpp" \
   "$OPENSSL_PREFIX/include/openssl/evp.h"; do
   if [[ ! -f "$file" ]]; then
