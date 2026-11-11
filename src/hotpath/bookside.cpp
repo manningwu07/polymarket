@@ -101,7 +101,7 @@ void BookSide::pop(Price price){
     // }
 
     // levels[i] = level;
-
+    // pool.erase(handle);
     // // Adjust best price as well
     // find_best_price(price);
 }

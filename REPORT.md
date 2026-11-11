@@ -8,7 +8,7 @@
 | modification-heavy | 10,000 | 0.570 | 1.454 | 60.8% faster | 26.757 |
 | mostly-resting | 10,000 | 0.467 | 1.203 | 61.1% faster | 22.417 |
 | mixed | 100,000 | 5.486 | 14.333 | 61.7% faster | 258.255 |
-| mixed | 1,000,000 | 60.568 | 218.013 | 72.2% faster | 3417.036 |
+| mixed | 1,000,000 | 60.568  | 218.013 | 72.2% faster | 3417.036 |
 
 Runtime change is `(custom - baseline) / baseline * 100`. The table describes the retained samples. It does not assign a cause to a difference.
 

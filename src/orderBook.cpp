@@ -101,10 +101,8 @@ Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
         } else {
             rest(asks, id, incoming);
         }
-    } else {
-        logged_ids.erase(id);
     }
-
+    
     ex.order = {
         .id = id,
         .price = incoming.price,
@@ -150,16 +148,6 @@ BookSideOrder OrderBook::remove(const Entry& entry) {
         return order;
     };
     return entry.side == Side::buy ? take(bids) : take(asks);
-}
-
-/*
- * Safely finds and returns entry from logged_id
- * If fails to find, returns null pointer
- */
-optional<Entry> OrderBook::getEntry(const OrderId& id) {
-    auto it = logged_ids.find(id);
-    if(it == logged_ids.end()) return std::nullopt;
-    return it->second;
 }
 
 /*
@@ -223,20 +211,22 @@ Execution OrderBook::submit_market(const OrderId& id, Side side, Quantity quanti
  * 
  */
 Order OrderBook::cancel(const OrderId& id) {
-    auto entry = getEntry(id);
-    if (!entry) throw out_of_range("Order ID not found");
+    auto it = logged_ids.find(id);
+    if(it == logged_ids.end()) throw out_of_range("Order ID not found");
 
-    BookSideOrder order = remove(*entry);
-    logged_ids.erase(id);
-
-    return Order{
+    BookSideOrder order = remove(it->second);
+    
+    Order newOrder = {
         .id = id,
         .price = order.price,
         .quantity = order.quantity,
         .sequence = order.sequence,
         .ordertype = limit,
-        .side = entry->side,
+        .side = it->second.side,
     };
+
+    logged_ids.erase(it);
+    return newOrder;
 }
 
 /*
@@ -248,12 +238,12 @@ Execution OrderBook::modify(const OrderId& id, Price newPrice, Quantity newQuant
     if (newPrice <= 0 || newQuantity <= 0)
         throw std::invalid_argument("Invalid price or quantity");
 
-    auto entry = getEntry(id);
-    if (!entry) throw std::out_of_range("Order ID not found");
+    auto it = logged_ids.find(id);
+    if(it == logged_ids.end()) throw std::out_of_range("Order ID not found");
 
     // Pull order out, then treat it as a new limit.
     // If doesn't cross, update match loop exits
-    remove(*entry);
+    remove(it->second);
 
     Order_Internal order = {
         .price = newPrice,
@@ -261,10 +251,16 @@ Execution OrderBook::modify(const OrderId& id, Price newPrice, Quantity newQuant
         .sequence = next_sequence_++,
         .handle = 0, // assigned when it rests
         .ordertype = limit,
-        .side = entry->side,
+        .side = it->second.side,
     };
 
-    return update(id, order);
+    Execution execution = update(id, order);
+
+    if(execution.order.quantity == 0) {
+        logged_ids.erase(id);
+    }
+    
+    return execution;
 }
 
 

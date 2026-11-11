@@ -45,8 +45,7 @@ class OrderBook {
 
         HalfBook<BidCompare> bids{Side::buy};
         HalfBook<AskCompare> asks{Side::sell};
-
-        optional<Entry> getEntry(const OrderId& id);
+        
         // Unlinks a resting order from its side and returns it
         BookSideOrder remove(const Entry& entry);
         template <class Compare>
