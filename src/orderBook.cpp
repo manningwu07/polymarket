@@ -147,6 +147,7 @@ BookSideOrder OrderBook::remove(const Entry& entry) {
         half.levels.erase(entry.handle);
         return order;
     };
+    
     return entry.side == Side::buy ? take(bids) : take(asks);
 }
 

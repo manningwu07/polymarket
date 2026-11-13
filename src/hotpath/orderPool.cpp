@@ -6,7 +6,8 @@ OrderPool::OrderPool() {
 }
 
 OrderNode& OrderPool::get(Handle handle) {
-    if(handle >= order_pool.size()) throw out_of_range("Handle out of range");
+    if(handle >= order_pool.size())
+        throw out_of_range("Handle out of range");
     return order_pool[handle];
 }
 
@@ -25,10 +26,10 @@ Handle OrderPool::insert(Price price, Quantity quantity, Sequence sequence) {
 
     Handle handle;
     
-    if (dead_handles.empty()) {
+    if (dead_handles.empty()){
         handle = static_cast<Handle>(order_pool.size());
         order_pool.push_back(node);
-    }else{
+    } else {
         handle = dead_handles.back();
         dead_handles.pop_back();
         order_pool[handle] = node;
