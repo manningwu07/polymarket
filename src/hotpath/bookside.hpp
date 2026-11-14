@@ -33,12 +33,29 @@ class BookSide {
 
         BookSide(Side side);
 
+        // Inlinable Hotpath
+        BookSideOrder get(Handle handle){
+            const OrderNode& node = pool.get(handle);
+            return {
+                .price = node.price,
+                .quantity = node.quantity,
+                .sequence = node.sequence,
+                .handle = handle
+            };
+        } // handle must be live
+
+        BookSideOrder top(Price price){
+            Handle head = levels[to_index(price)].head;
+            if(head == null_handle)
+                throw out_of_range("No orders at this price");
+            return get(head);
+        }
+
         // Modifiers
         Handle push(Price price, Quantity quantity, Sequence sequence); // Insert in the back
         // Erase + push: the order loses queue position and gets a new handle. Throws before
         // touching the book if the new price is out of range. Returns the new handle.
         Handle modify(const BookSideOrder& newOrder);
-        BookSideOrder top(Price price);
         void pop(Price price); // Knocks out first in
         void erase(Handle handle); // Arbitrary delete
 
@@ -47,7 +64,6 @@ class BookSide {
         // Getters
         Price getBestPrice();
         bool empty() const { return best_price == empty_best(); }
-        BookSideOrder get(Handle handle); // handle must be live
         vector<BookSideOrder> orders(); // Every resting order, unordered across levels
 
     private:

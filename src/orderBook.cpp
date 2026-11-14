@@ -2,7 +2,6 @@
 #include <algorithm>
 // #include <csetjmp>
 #include <cstddef>
-#include <optional>
 #include <stdexcept>
 #include "orderBook.hpp"
 

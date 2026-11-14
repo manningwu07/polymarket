@@ -45,23 +45,6 @@ Handle BookSide::push(Price price, Quantity quantity, Sequence sequence){
     return handle;
 }
 
-BookSideOrder BookSide::top(Price price) {
-    Handle head = levels[to_index(price)].head;
-    if(head == null_handle)
-        throw out_of_range("No orders at this price");
-    return get(head);
-}
-
-BookSideOrder BookSide::get(Handle handle) {
-    const OrderNode& node = pool.get(handle);
-    return {
-        .price = node.price,
-        .quantity = node.quantity,
-        .sequence = node.sequence,
-        .handle = handle
-    };
-}
-
 void BookSide::set_quantity(Handle handle, Quantity quantity) {
     pool.get(handle).quantity = quantity;
 }
