@@ -4,11 +4,14 @@ set -euo pipefail
 # Build Polymarkets' native C++ benchmark in release mode.
 # Place this file at polymarket/compile.sh and run it from any directory.
 # This does not modify the official benchmark artifacts or profiling builds.
+# Usage: ./compile.sh [engine_src_dir] [output_binary]
+# Defaults: this repo's src/ and build/custom-benchmark. ab.sh passes both to build an old git ref.
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC_DIR="$(cd "${1:-$PROJECT_DIR/src}" && pwd)"
 BASE_DIR="$(cd "$PROJECT_DIR/../polymarket-base" && pwd)"
 NATIVE_DIR="$PROJECT_DIR/benchmark-native-2026-10-19/native"
 BUILD_DIR="$PROJECT_DIR/build"
-BIN="$BUILD_DIR/custom-benchmark"
+BIN="${2:-$BUILD_DIR/custom-benchmark}"
 JSON_INCLUDE="$BASE_DIR/cpp/build/_deps/nlohmann_json-src/include"
 
 if ! command -v brew >/dev/null 2>&1; then
@@ -20,9 +23,9 @@ OPENSSL_PREFIX="$(brew --prefix openssl@3)"
 for file in \
   "$NATIVE_DIR/benchmark.cpp" \
   "$NATIVE_DIR/trace.cpp" \
-  "$PROJECT_DIR/src/orderBook.cpp" \
-  "$PROJECT_DIR/src/hotpath/bookside.cpp" \
-  "$PROJECT_DIR/src/hotpath/orderPool.cpp" \
+  "$SRC_DIR/orderBook.cpp" \
+  "$SRC_DIR/hotpath/bookside.cpp" \
+  "$SRC_DIR/hotpath/orderPool.cpp" \
   "$JSON_INCLUDE/nlohmann/json.hpp" \
   "$OPENSSL_PREFIX/include/openssl/evp.h"; do
   if [[ ! -f "$file" ]]; then
@@ -39,7 +42,7 @@ CXXFLAGS=(
   -std=c++20 -O3 -DNDEBUG
   -I "$BASE_DIR/cpp/src"
   -I "$JSON_INCLUDE"
-  -I "$PROJECT_DIR/src"
+  -I "$SRC_DIR"
   -I "$OPENSSL_PREFIX/include"
   -I "$(brew --prefix boost)/include"
 )
@@ -53,7 +56,7 @@ printf 'Compiling matching engine...\n'
 ENGINE_OBJS=()
 for src in orderBook hotpath/bookside hotpath/orderPool; do
   obj="$TMP_DIR/$(basename "$src").o"
-  xcrun clang++ "${CXXFLAGS[@]}" -c "$PROJECT_DIR/src/$src.cpp" -o "$obj"
+  xcrun clang++ "${CXXFLAGS[@]}" -c "$SRC_DIR/$src.cpp" -o "$obj"
   ENGINE_OBJS+=("$obj")
 done
 
@@ -64,6 +67,7 @@ xcrun clang++ \
   -o "$TMP_DIR/custom-benchmark"
 
 # Only replace the previous successful binary after a full successful build.
+mkdir -p "$(dirname "$BIN")"
 mv "$TMP_DIR/custom-benchmark" "$BIN"
 printf '\nBuild complete: %s\n' "$BIN"
 printf 'This is a release build; use ./reprofile.sh for Instruments source-level profiling.\n'

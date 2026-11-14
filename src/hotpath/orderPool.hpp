@@ -2,6 +2,7 @@
 
 #include "../order.hpp"
 #include <cstdint>
+#include <stdexcept>
 
 using namespace std;
 
@@ -19,13 +20,25 @@ struct OrderNode {
 class OrderPool{
     public:
         OrderPool();
-        OrderNode& get(Handle handle);
-        void erase(Handle handle); // No checks. h must be live; caller must unlink first
+        // Hotpaths:
+        OrderNode& get(Handle handle){
+            if(handle >= order_pool.size())
+                throw out_of_range("Handle out of range");
+            return order_pool[handle];
+        }
+        void erase(Handle handle){
+            dead_handles.push_back(handle);
+        } // No checks. h must be live; caller must unlink first
+
+        // Coldpath small functions
+        void modify_next(Handle index, Handle handle){
+            order_pool[index].next = handle;
+        }
+        void modify_prev(Handle index, Handle handle){
+            order_pool[index].prev = handle;
+        }
+
         Handle insert(Price price, Quantity quantity, Sequence sequence);
-        
-        void modify_next(Handle index, Handle handle);
-        void modify_prev(Handle index, Handle handle);
-        
     private:
         vector<OrderNode> order_pool; // handle -> OrderNode
         vector<Handle> dead_handles;
