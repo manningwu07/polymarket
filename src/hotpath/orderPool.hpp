@@ -22,9 +22,7 @@ class OrderPool{
         OrderPool();
         // Hotpaths:
         OrderNode& get(Handle handle){
-            if(handle >= order_pool.size())
-                throw out_of_range("Handle out of range");
-            return order_pool[handle];
+            return order_pool.at(handle);
         }
         void erase(Handle handle){
             dead_handles.push_back(handle);

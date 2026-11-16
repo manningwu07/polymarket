@@ -3,15 +3,16 @@ set -euo pipefail
 
 # A/B the working tree (after) against a git ref (before, default HEAD) on the 1M mixed trace.
 # Usage: ./ab.sh <label> [ref]
-# Writes profiles/ab-builds/<YYYYMMDD>-<label>/{before,after,mixed1M.json}; refuses to reuse a folder.
+# Writes profiles/ab-builds/<YYYYMMDD>-<label>/{before,after,mixed1M.json}; asks before overwriting a folder.
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LABEL="${1:?usage: ./ab.sh <label> [ref]}"
 REF="${2:-HEAD}"
 OUT="$PROJECT_DIR/profiles/ab-builds/$(date +%Y%m%d)-$LABEL"
 
 if [[ -e "$OUT" ]]; then
-  echo "Error: $OUT already exists; pick another label." >&2
-  exit 1
+  read -r -p "$OUT already exists. Delete it and rerun? [y/N] " reply
+  [[ "$reply" == [yY] ]] || { echo "Aborted; pick another label." >&2; exit 1; }
+  rm -rf "$OUT"
 fi
 
 REF_SRC="$(mktemp -d)"

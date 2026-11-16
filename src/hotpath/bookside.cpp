@@ -1,7 +1,6 @@
 #include "bookside.hpp"
 #include "orderPool.hpp"
 #include <cstdint>
-#include <stdexcept>
 
 using namespace std;
 
@@ -63,7 +62,7 @@ void BookSide::pop(Price price){
     size_t i = to_index(price);
     OrderLevel level = levels[i];
     if(level.head == null_handle) 
-        throw out_of_range("No orders at this price");
+        throw_out_of_range("No orders at this price");
 
     erase(levels[to_index(price)].head); // Testing this + code under -> which is faster?
     /*
@@ -87,12 +86,6 @@ void BookSide::pop(Price price){
     // pool.erase(handle);
     // // Adjust best price as well
     // find_best_price(price);
-}
-
-Handle BookSide::modify(const BookSideOrder& order){
-    to_index(order.price);
-    erase(order.handle);
-    return push(order.price, order.quantity, order.sequence);
 }
 
 void BookSide::erase(Handle handle){
@@ -130,14 +123,6 @@ Price BookSide::getBestPrice() {
 }
 
 // Helper functions:
-/*
- * Converts price -> index
- */
-size_t BookSide::to_index(Price price) const {
-    if(price == kNoPrice) throw out_of_range("This is a limit order");
-    if(price < 0 || price > kMaxPrice) throw out_of_range("Price out of range");
-    return static_cast<size_t>(price);
-}
 
 Price BookSide::empty_best() const {
     return side_ == Side::buy ? numeric_limits<Price>::min() : numeric_limits<Price>::max();
@@ -150,7 +135,7 @@ Price BookSide::empty_best() const {
  * the next best is then strictly worse
  * so scan away from it and stop at the first non-empty level.
  * 
- * Might convert to bitmap for constant speedup
+ * Might convert to bitmap for constant speedup via SIMD
  * If levels is too big
  * For now its managable
  */ 
