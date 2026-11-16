@@ -2,7 +2,6 @@
 
 #include "../order.hpp"
 #include <cstdint>
-#include <stdexcept>
 
 using namespace std;
 
@@ -30,10 +29,10 @@ class OrderPool{
 
         // Coldpath small functions
         void modify_next(Handle index, Handle handle){
-            order_pool[index].next = handle;
+            order_pool.at(index).next = handle;
         }
         void modify_prev(Handle index, Handle handle){
-            order_pool[index].prev = handle;
+            order_pool.at(index).prev = handle;
         }
 
         Handle insert(Price price, Quantity quantity, Sequence sequence);

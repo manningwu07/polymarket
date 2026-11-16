@@ -36,10 +36,9 @@ Handle BookSide::push(Price price, Quantity quantity, Sequence sequence){
     }
     level.tail = handle;
     
-    
     levels[i] = level;
-
-    best_price = side_ == Side::buy ? max(best_price, price) : min(best_price, price);
+    best_price = side_ == Side::buy ? 
+        max(best_price, price) : min(best_price, price);
 
     return handle;
 }
@@ -64,28 +63,7 @@ void BookSide::pop(Price price){
     if(level.head == null_handle) 
         throw_out_of_range("No orders at this price");
 
-    erase(levels[to_index(price)].head); // Testing this + code under -> which is faster?
-    /*
-     * 2 cases
-     * a) H == T -> Last node
-     * b) H != T' 
-     */
-
-    // if(level.head == level.tail) {
-    //     pool.erase(level.head);
-    //     level.head = null_handle;
-    //     level.tail = null_handle;
-    // } else {
-    //     OrderNode curr = pool.get(level.head);
-    //     pool.erase(level.head);
-    //     pool.modify_prev(curr.next, null_handle);
-    //     level.head = curr.next;
-    // }
-
-    // levels[i] = level;
-    // pool.erase(handle);
-    // // Adjust best price as well
-    // find_best_price(price);
+    erase(levels[to_index(price)].head); // Hotpathing makes negliable diff
 }
 
 void BookSide::erase(Handle handle){
@@ -104,13 +82,13 @@ void BookSide::erase(Handle handle){
         level.tail = null_handle;
     } else if (node.prev == null_handle) {
         level.head = node.next;
-        pool.get(node.next).prev = null_handle;
+        pool.modify_prev(node.next, null_handle);
     } else if(node.next == null_handle){
         level.tail = node.prev;
-        pool.get(node.prev).next = null_handle;
+        pool.modify_next(node.prev, null_handle);
     } else {
-        pool.get(node.prev).next = node.next;
-        pool.get(node.next).prev = node.prev;
+        pool.modify_next(node.prev, node.next);
+        pool.modify_prev(node.next, node.prev);
     }
     
     levels[i] = level;
