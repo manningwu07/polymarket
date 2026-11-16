@@ -4,3 +4,5 @@ build*
 .pytest_cache*
 REPORT.md
 DETAILS.md
+CLAUDE.md
+AGENTS.md

@@ -54,6 +54,7 @@ Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
 
             // Limit stops once the maker is strictly better than it; market always crosses
             if (incoming.ordertype == OrderType::limit && better(incoming.price, maker.price)) break;
+            if (ex.fills.empty()) ex.fills.reserve(4); // One time allocation for the ex fills. Cuts ~40% of allocations based off profile
 
             // Execute trade
             Quantity traded = std::min(incoming.quantity, maker.quantity);
@@ -255,10 +256,7 @@ Execution OrderBook::modify(const OrderId& id, Price newPrice, Quantity newQuant
     };
 
     Execution execution = update(id, order);
-
-    if(execution.order.quantity == 0) {
-        logged_ids.erase(id);
-    }
+    if(execution.order.quantity == 0) logged_ids.erase(id);
     
     return execution;
 }

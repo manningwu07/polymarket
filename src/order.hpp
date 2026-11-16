@@ -55,7 +55,7 @@ struct Fill {
     OrderId buyer_id;
     OrderId seller_id;
     Price price;
-    Quantity quantity;    
+    Quantity quantity;
 };
 
 struct Execution {
