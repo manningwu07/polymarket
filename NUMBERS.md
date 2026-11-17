@@ -1,4 +1,4 @@
-# Numbers, mixed 1M (2026-11-16 19:02)
+# Numbers, mixed 1M (run started 2026-11-16 23:59 UTC)
 
 Raw data: `profiles/numbers-20261116-1859/`. 20 blocks x 5 reps, binaries in shuffled order per block.
 
@@ -9,6 +9,20 @@ Raw data: `profiles/numbers-20261116-1859/`. 20 blocks x 5 reps, binaries in shu
 | current | 49.57 | 0.56 | 46.96 | 58.03 | 49.6 |
 | floor | 11.47 | 0.16 | 10.64 | 11.74 | 11.5 |
 | baseline | 215.24 | 8.24 | 203.73 | 248.95 | 215.2 |
+
+## Distribution and drift (current)
+
+- p10 to p90: 48.19 to 50.43 ms; min 46.96, max 58.03
+- Reps more than 10% above median (3 of 100): block 6 rep 2: 58.03, block 6 rep 3: 57.42, block 10 rep 1: 55.91
+
+Per-block medians, first 5 vs last 5 blocks:
+
+| Binary | First blocks ms | Last blocks ms | Change |
+| --- | ---: | ---: | ---: |
+| current | 48.35 | 50.07 | +3.6% |
+| floor | 11.01 | 11.57 | +5.1% |
+
+If the floor stub drifts by the same fraction as the engine, the drift is machine-wide (likely thermal or clock-frequency change), not engine behaviour. A single slow rep inside a process with normal neighbours points to outside interference.
 
 ## Floor calculation
 
