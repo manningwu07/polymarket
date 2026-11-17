@@ -18,9 +18,8 @@ BookSide::BookSide(Side side) : side_(side){
 Handle BookSide::push(Price price, Quantity quantity, Sequence sequence){
     size_t i = to_index(price);
 
-    // Insert pools to get handle
-    Handle handle = pool.insert(price, quantity, sequence);
     // Insert into pool to get handle
+    Handle handle = pool.insert(price, quantity, sequence);
     OrderLevel level = levels[i];
     /*
      * 2 cases:

@@ -1,6 +1,4 @@
-// #include <__format/range_default_formatter.h>
 #include <algorithm>
-// #include <csetjmp>
 #include <cstddef>
 #include <optional>
 #include <stdexcept>
@@ -20,9 +18,7 @@ OrderBook::OrderBook() { // ive given up and im j benchmark maxing now LMAO
 }
 
 /*
- * Updates the data structures when new "tick" happens
- * First checks if anything changed
- * Then executes a simulation tick
+ * Matches incoming against the opposite heap, then rests unmatched limit quantity or frees its handle
  */
 
 Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
@@ -124,7 +120,7 @@ Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
 
 /*
  * Safely finds and returns entry from logged_id
- * If fails to find, returns null pointer
+ * If fails to find, returns nullopt
  */
 optional<Entry> OrderBook::getEntry(const OrderId& id) {
     auto it = logged_ids.find(id);
@@ -210,7 +206,7 @@ Execution OrderBook::submit_market(const OrderId& id, Side side, Quantity quanti
 }
 
 /*
- * 
+ * Removes a resting order and returns it
  */
 Order OrderBook::cancel(const OrderId& id) {
     auto entry = getEntry(id);

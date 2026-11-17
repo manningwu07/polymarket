@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../order.hpp"
-using namespace std;
 
 struct BidCompare {
   template <class T>
@@ -24,7 +23,7 @@ template <typename Compare> class OrderHeap {
 public:
   OrderHeap<Compare>();
   // Position based modifications
-  const vector<Order_Internal> &get_heap() const { return heap_; }
+  const std::vector<Order_Internal> &get_heap() const { return heap_; }
   const Order_Internal &operator[](size_t i) const { return heap_[i]; }
   
   void update_top_quantity(Quantity quantity) { heap_[0].quantity = quantity;}
@@ -39,8 +38,8 @@ public:
   size_t size();          // size of heap
 
 private:
-  vector<Order_Internal> heap_;
-  vector<int> positions_; // handle -> heap idx
+  std::vector<Order_Internal> heap_;
+  std::vector<int> positions_; // handle -> heap idx
   Compare higher_priority_;
   
   void sift_up(size_t i); 

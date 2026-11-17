@@ -27,10 +27,9 @@ Order_Internal OrderHeap<Compare>::top(){
     return heap_[0];
 } // returns top
 
-// Hotpathing pop because its called everytime update is
 template<typename Compare>
 void OrderHeap<Compare>::pop() {
-    if(heap_.size() == 0) throw out_of_range("heap is empty");
+    if(heap_.size() == 0) throw std::out_of_range("heap is empty");
 
     // Update positions regardless
     positions_[heap_[0].handle] = -1;
@@ -59,15 +58,15 @@ void OrderHeap<Compare>::push(const Order_Internal& order){
 template<typename Compare>
 Order_Internal OrderHeap<Compare>::get(Handle h){
     size_t i = positions_[h];
-    if(i >= heap_.size()) throw out_of_range("Invalid heap index");
+    if(i >= heap_.size()) throw std::out_of_range("Invalid heap index");
     return heap_[i];
-} // returns order at index i
+} // returns order for handle h
 
 template<typename Compare>
 void OrderHeap<Compare>::erase(Handle h) {
     size_t i = positions_[h];
     if (i >= heap_.size())
-        throw out_of_range("Invalid heap index");
+        throw std::out_of_range("Invalid heap index");
 
     size_t last = heap_.size() - 1;
 
@@ -88,7 +87,7 @@ void OrderHeap<Compare>::erase(Handle h) {
     } else {
         sift_down(i);
     }
-} // erases at id
+} // erases order for handle h
 
 // Private functions
 template<typename Compare>

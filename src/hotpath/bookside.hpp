@@ -3,9 +3,7 @@
 #include "../order.hpp"
 #include "orderPool.hpp"
 
-using namespace std;
-
-// if head/tail = -1 -> null 
+// head/tail == null_handle -> empty level
 struct OrderLevel{
     Handle head; // 4
     Handle tail; // 4
@@ -17,8 +15,6 @@ struct BookSideOrder {
     Sequence sequence;
     Handle handle;
 };
-
-// using Bitmap = uint32_t;
 
 class BookSide {
     public:
@@ -52,11 +48,7 @@ class BookSide {
         }
 
         // Modifiers
-        Handle push(Price price, Quantity quantity, Sequence sequence); // Insert in the back
-        
-        // Erase + push: the order loses queue position and gets a new handle. 
-        // Throws before touching the book if the new price is out of range.
-        // Returns the new handle.
+        Handle push(Price price, Quantity quantity, Sequence sequence); // Insert in the back; returns the new handle
         void pop(Price price); // Knocks out first in
         void erase(Handle handle); // Arbitrary delete
 
@@ -65,11 +57,11 @@ class BookSide {
         // Getters
         Price getBestPrice();
         bool empty() const { return best_price == empty_best(); }
-        vector<BookSideOrder> orders(); // Every resting order, unordered across levels
+        std::vector<BookSideOrder> orders(); // Every resting order, unordered across levels
 
     private:
         OrderPool pool;
-        vector<OrderLevel> levels; // price -> LL Head + Tail
+        std::vector<OrderLevel> levels; // price -> LL Head + Tail
         Price best_price;
         const Side side_; 
 
@@ -86,6 +78,6 @@ class BookSide {
         }
         
         [[noreturn]] [[gnu::noinline]] static void throw_out_of_range(const char* str) {
-            throw out_of_range(str);
+            throw std::out_of_range(str);
         }
 };

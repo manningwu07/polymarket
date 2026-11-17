@@ -4,9 +4,7 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
-using OrderId = string;
+using OrderId = std::string;
 using Price = int64_t;       // integer ticks, divide by 100 to get actual price
 using Quantity = int64_t;
 using Sequence = uint64_t;
@@ -38,7 +36,7 @@ struct Order {
     // chrono::system_clock created_at; (not optimal but would add in future)
 };
 
-// Heap
+// Order without its id: incoming orders and heap entries
 struct Order_Internal {
     // divide by 100 to get actual price in $
     // -1 => market price
@@ -60,5 +58,5 @@ struct Fill {
 
 struct Execution {
     Order order;
-    vector<Fill> fills;
+    std::vector<Fill> fills;
 };

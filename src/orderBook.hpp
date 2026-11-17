@@ -7,8 +7,6 @@
 #include <boost/unordered/unordered_flat_map.hpp>
 #include <boost/unordered/unordered_flat_set.hpp>
 
-using namespace std;
-
 struct Entry {
   Handle handle;
   Side side;
@@ -21,11 +19,11 @@ struct HalfBook {
     explicit HalfBook(Side side) : levels(side) {}
 
     BookSide levels;
-    vector<OrderId> level_ids; // BookSide handle -> id
+    std::vector<OrderId> level_ids; // BookSide handle -> id
 
     OrderHeap<Compare> heap;
     OrderHandle heap_handles;
-    vector<OrderId> heap_ids; // heap handle -> id
+    std::vector<OrderId> heap_ids; // heap handle -> id
 };
 
 class OrderBook {
@@ -36,11 +34,11 @@ class OrderBook {
         Order cancel(const OrderId&);
         Execution modify(const OrderId&, Price, Quantity);
 
-        vector<Order> snapshot(Side side);
+        std::vector<Order> snapshot(Side side);
 
     private:
         Sequence next_sequence_ = 1;
-        boost::unordered_flat_map<OrderId, Entry> logged_ids; // OrderId -> handle
+        boost::unordered_flat_map<OrderId, Entry> logged_ids; // live OrderId -> Entry
         boost::unordered_flat_set<OrderId> seen_set;
 
         HalfBook<BidCompare> bids{Side::buy};

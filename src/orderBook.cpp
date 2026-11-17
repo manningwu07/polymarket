@@ -1,6 +1,4 @@
-// #include <__format/range_default_formatter.h>
 #include <algorithm>
-// #include <csetjmp>
 #include <cstddef>
 #include <stdexcept>
 #include "orderBook.hpp"
@@ -25,9 +23,7 @@ static void store_id(vector<OrderId>& ids, Handle handle, const OrderId& id) {
 }
 
 /*
- * Updates the data structures when new "tick" happens
- * First checks if anything changed
- * Then executes a simulation tick
+ * Matches incoming against the opposite side, then rests any unmatched limit quantity
  */
 
 Execution OrderBook::update(const OrderId& id, Order_Internal incoming) {
@@ -209,7 +205,7 @@ Execution OrderBook::submit_market(const OrderId& id, Side side, Quantity quanti
 }
 
 /*
- * 
+ * Removes a resting order and returns it
  */
 Order OrderBook::cancel(const OrderId& id) {
     auto it = logged_ids.find(id);

@@ -3,8 +3,6 @@
 #include "../order.hpp"
 #include <cstdint>
 
-using namespace std;
-
 const Handle null_handle = UINT32_MAX;
 
 struct OrderNode {
@@ -25,9 +23,9 @@ class OrderPool{
         }
         void erase(Handle handle){
             dead_handles.push_back(handle);
-        } // No checks. h must be live; caller must unlink first
+        } // No checks. handle must be live; caller must unlink first
 
-        // Coldpath small functions
+        // Linked-list updates
         void modify_next(Handle index, Handle handle){
             order_pool.at(index).next = handle;
         }
@@ -37,7 +35,7 @@ class OrderPool{
 
         Handle insert(Price price, Quantity quantity, Sequence sequence);
     private:
-        vector<OrderNode> order_pool; // handle -> OrderNode
-        vector<Handle> dead_handles;
+        std::vector<OrderNode> order_pool; // handle -> OrderNode
+        std::vector<Handle> dead_handles;
 };
     

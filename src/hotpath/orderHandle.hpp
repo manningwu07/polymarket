@@ -19,6 +19,6 @@ class OrderHandle {
         void remove_handle(Handle handle) { free_handles.push_back(handle); }
 
     private:
-        vector<Handle> free_handles;
+        std::vector<Handle> free_handles;
         Handle next_handle_ = 0;
 };
